@@ -57,13 +57,9 @@ function SelectorView({
 }) {
   return (
     <div
+      className="photogenics-background"
       style={{
         minHeight: '100vh',
-        background: '#080808',
-        backgroundImage: `
-          radial-gradient(ellipse at 25% 15%, rgba(255,255,255,0.035) 0%, transparent 55%),
-          radial-gradient(ellipse at 75% 85%, rgba(255,255,255,0.025) 0%, transparent 50%)
-        `,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -74,21 +70,9 @@ function SelectorView({
         overflow: 'hidden',
       }}
     >
-      {/* Grain overlay */}
-      <svg
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.04, pointerEvents: 'none' }}
-        aria-hidden="true"
-      >
-        <filter id="grain">
-          <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" stitchTiles="stitch" />
-          <feColorMatrix type="saturate" values="0" />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#grain)" />
-      </svg>
-
       {/* Top: Logo */}
       <div style={{ position: 'relative', zIndex: 1, animation: 'fadeIn 0.6s ease both' }}>
-        <PhotogenicsLogo color="rgba(255,255,255,0.9)" size="1rem" />
+        <PhotogenicsLogo size="1.25rem" />
       </div>
 
       {/* Middle: Heading + Buttons */}
@@ -109,7 +93,7 @@ function SelectorView({
             fontFamily: 'var(--font-bebas, sans-serif)',
             fontSize: 'clamp(4.5rem, 20vw, 7rem)',
             fontWeight: 400,
-            color: '#ffffff',
+            color: '#0a0a0a',
             letterSpacing: '0.06em',
             lineHeight: 1,
             textAlign: 'center',
@@ -138,9 +122,9 @@ function SelectorView({
                 style={{
                   width: '100%',
                   padding: '1.05rem 2rem',
-                  background: hasFile ? '#ffffff' : 'rgba(255,255,255,0.1)',
-                  color: hasFile ? '#0a0a0a' : 'rgba(255,255,255,0.25)',
-                  border: hasFile ? 'none' : '1px solid rgba(255,255,255,0.12)',
+                  background: hasFile ? '#0a0a0a' : 'rgba(0,0,0,0.06)',
+                  color: hasFile ? '#ffffff' : 'rgba(0,0,0,0.28)',
+                  border: hasFile ? 'none' : '1px solid rgba(0,0,0,0.1)',
                   borderRadius: '6px',
                   fontSize: '0.95rem',
                   fontWeight: 700,
@@ -153,7 +137,7 @@ function SelectorView({
                 onMouseEnter={(e) => {
                   if (hasFile) {
                     e.currentTarget.style.transform = 'translateY(-1px)'
-                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(255,255,255,0.15)'
+                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.14)'
                   }
                 }}
                 onMouseLeave={(e) => {
@@ -183,10 +167,10 @@ function SelectorView({
           animation: 'fadeIn 0.7s ease 0.5s both',
         }}
       >
-        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', letterSpacing: '0.02em', marginBottom: '0.3rem' }}>
+        <p style={{ color: 'rgba(0,0,0,0.58)', fontSize: '0.8rem', letterSpacing: '0.02em', marginBottom: '0.3rem' }}>
           Terima kasih sudah berfoto di Photogenics
         </p>
-        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.02em' }}>
+        <p style={{ color: 'rgba(0,0,0,0.8)', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.02em' }}>
           Jangan lupa, link ini aktif selama 2 x 24 jam
         </p>
       </div>
@@ -232,14 +216,9 @@ function DownloadView({
 
   return (
     <div
+      className="photogenics-background"
       style={{
         minHeight: '100vh',
-        background: '#ffffff',
-        backgroundImage: `
-          linear-gradient(rgba(0,0,0,0.055) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0,0,0,0.055) 1px, transparent 1px)
-        `,
-        backgroundSize: '48px 48px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -250,7 +229,7 @@ function DownloadView({
     >
       {/* Top: Logo */}
       <div style={{ animation: 'fadeIn 0.5s ease both' }}>
-        <PhotogenicsLogo color="#0a0a0a" size="1.1rem" />
+        <PhotogenicsLogo size="1.35rem" />
       </div>
 
       {/* Center: Media preview */}

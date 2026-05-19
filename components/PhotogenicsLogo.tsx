@@ -1,48 +1,33 @@
 'use client'
 
+import Image from 'next/image'
+
 interface LogoProps {
   color?: string
   size?: string
 }
 
 export function PhotogenicsLogo({
-  color = '#ffffff',
+  color = '#0a0a0a',
   size = '1.1rem',
 }: LogoProps) {
+  const opacityMatch = color.match(/rgba?\([^,]+,[^,]+,[^,]+,\s*([\d.]+)\)/)
+  const opacity = opacityMatch ? Number(opacityMatch[1]) : 1
+
   return (
-    <span
+    <Image
+      src="/photogenics-logo.png"
+      alt="Photogenics"
+      width={248}
+      height={56}
+      priority
       style={{
-        color,
-        fontSize: size,
-        letterSpacing: '0.04em',
-        fontWeight: 600,
-        fontFamily: 'var(--font-outfit, sans-serif)',
-        display: 'inline-flex',
-        alignItems: 'baseline',
+        display: 'block',
+        width: 'auto',
+        height: size,
+        opacity,
         userSelect: 'none',
       }}
-    >
-      phot
-      {/* The iconic "o" with a center dot — camera lens motif */}
-      <span style={{ position: 'relative', display: 'inline-block' }}>
-        o
-        <span
-          style={{
-            position: 'absolute',
-            top: '46%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '0.2em',
-            height: '0.2em',
-            background: color,
-            borderRadius: '50%',
-            display: 'block',
-            pointerEvents: 'none',
-          }}
-          aria-hidden="true"
-        />
-      </span>
-      genics
-    </span>
+    />
   )
 }

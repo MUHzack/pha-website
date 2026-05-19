@@ -3,9 +3,9 @@ import { PhotogenicsLogo } from './PhotogenicsLogo'
 export function ProcessingSession() {
   return (
     <div
+      className="photogenics-background"
       style={{
         minHeight: '100vh',
-        background: '#080808',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -15,7 +15,7 @@ export function ProcessingSession() {
         textAlign: 'center',
       }}
     >
-      <PhotogenicsLogo color="rgba(255,255,255,0.5)" size="1rem" />
+      <PhotogenicsLogo size="1.25rem" />
 
       <div
         style={{
@@ -32,8 +32,8 @@ export function ProcessingSession() {
             width: '56px',
             height: '56px',
             borderRadius: '50%',
-            border: '1.5px solid rgba(255,255,255,0.12)',
-            borderTop: '1.5px solid rgba(255,255,255,0.6)',
+            border: '1.5px solid rgba(0,0,0,0.12)',
+            borderTop: '1.5px solid rgba(0,0,0,0.6)',
             animation: 'spin 1s linear infinite',
             marginBottom: '0.5rem',
           }}
@@ -47,7 +47,7 @@ export function ProcessingSession() {
             fontFamily: 'var(--font-bebas, sans-serif)',
             fontSize: 'clamp(2.5rem, 12vw, 4.5rem)',
             fontWeight: 400,
-            color: '#ffffff',
+            color: '#0a0a0a',
             letterSpacing: '0.06em',
             lineHeight: 1,
           }}
@@ -57,7 +57,7 @@ export function ProcessingSession() {
 
         <p
           style={{
-            color: 'rgba(255,255,255,0.45)',
+            color: 'rgba(0,0,0,0.55)',
             fontSize: '0.875rem',
             lineHeight: 1.7,
             maxWidth: '280px',
@@ -69,7 +69,7 @@ export function ProcessingSession() {
         {/* Refresh hint */}
         <p
           style={{
-            color: 'rgba(255,255,255,0.2)',
+            color: 'rgba(0,0,0,0.32)',
             fontSize: '0.75rem',
             marginTop: '0.5rem',
           }}

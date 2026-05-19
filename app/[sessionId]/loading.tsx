@@ -1,9 +1,11 @@
+import { PhotogenicsLogo } from '@/components/PhotogenicsLogo'
+
 export default function Loading() {
   return (
     <div
+      className="photogenics-background"
       style={{
         minHeight: '100vh',
-        background: '#0a0a0a',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -12,16 +14,8 @@ export default function Loading() {
         fontFamily: 'var(--font-outfit, sans-serif)',
       }}
     >
-      {/* Logo placeholder */}
-      <div
-        style={{
-          color: 'rgba(255,255,255,0.3)',
-          fontSize: '1rem',
-          letterSpacing: '0.08em',
-          animation: 'pulse 1.8s ease-in-out infinite',
-        }}
-      >
-        photogenics
+      <div style={{ animation: 'pulse 1.8s ease-in-out infinite' }}>
+        <PhotogenicsLogo color="rgba(0,0,0,0.55)" size="1.25rem" />
       </div>
 
       {/* Bouncing dots */}
@@ -34,7 +28,7 @@ export default function Loading() {
               width: '7px',
               height: '7px',
               borderRadius: '50%',
-              background: 'rgba(255,255,255,0.35)',
+              background: 'rgba(0,0,0,0.35)',
               animation: `bounce 1s ease-in-out ${i * 0.18}s infinite`,
             }}
           />

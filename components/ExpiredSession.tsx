@@ -3,12 +3,9 @@ import { PhotogenicsLogo } from './PhotogenicsLogo'
 export function ExpiredSession() {
   return (
     <div
+      className="photogenics-background"
       style={{
         minHeight: '100vh',
-        background: '#080808',
-        backgroundImage: `
-          radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.025) 0%, transparent 60%)
-        `,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -18,7 +15,7 @@ export function ExpiredSession() {
         textAlign: 'center',
       }}
     >
-      <PhotogenicsLogo color="rgba(255,255,255,0.4)" size="1rem" />
+      <PhotogenicsLogo size="1.25rem" />
 
       <div
         style={{
@@ -35,11 +32,11 @@ export function ExpiredSession() {
             width: '48px',
             height: '48px',
             borderRadius: '50%',
-            border: '1.5px solid rgba(255,255,255,0.15)',
+            border: '1.5px solid rgba(0,0,0,0.15)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'rgba(255,255,255,0.3)',
+            color: 'rgba(0,0,0,0.45)',
             fontSize: '1.4rem',
             marginBottom: '0.5rem',
           }}
@@ -53,7 +50,7 @@ export function ExpiredSession() {
             fontFamily: 'var(--font-bebas, sans-serif)',
             fontSize: 'clamp(2.5rem, 12vw, 4.5rem)',
             fontWeight: 400,
-            color: '#ffffff',
+            color: '#0a0a0a',
             letterSpacing: '0.06em',
             lineHeight: 1,
           }}
@@ -63,7 +60,7 @@ export function ExpiredSession() {
 
         <p
           style={{
-            color: 'rgba(255,255,255,0.45)',
+            color: 'rgba(0,0,0,0.55)',
             fontSize: '0.875rem',
             lineHeight: 1.7,
             maxWidth: '280px',
@@ -71,13 +68,13 @@ export function ExpiredSession() {
         >
           Link softfile ini sudah tidak aktif.
           <br />
-          Link hanya berlaku selama <strong style={{ color: 'rgba(255,255,255,0.7)' }}>3 hari</strong> setelah sesi foto.
+          Link hanya berlaku selama <strong style={{ color: 'rgba(0,0,0,0.78)' }}>3 hari</strong> setelah sesi foto.
         </p>
       </div>
 
       <p
         style={{
-          color: 'rgba(255,255,255,0.2)',
+          color: 'rgba(0,0,0,0.34)',
           fontSize: '0.75rem',
           letterSpacing: '0.04em',
         }}
