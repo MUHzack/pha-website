@@ -87,11 +87,15 @@ body {
   isolation: isolate;
   background-color: #f4f4f4;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.22)),
+    linear-gradient(rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.18)),
     url('/photogenics-background.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+}
+
+.softfile-welcome {
+  background-position: center;
 }
 
 .download-geometric-background {
@@ -100,4 +104,16 @@ body {
     linear-gradient(rgba(0, 0, 0, 0.055) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 0, 0, 0.055) 1px, transparent 1px);
   background-size: 48px 48px;
+}
+
+@media (max-width: 520px) {
+  .softfile-welcome {
+    background-position: 46% center;
+  }
+}
+
+@media (min-width: 900px) {
+  .softfile-welcome {
+    background-position: center 42%;
+  }
 }

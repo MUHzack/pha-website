@@ -57,47 +57,44 @@ function SelectorView({
 }) {
   return (
     <div
-      className="photogenics-background"
+      className="photogenics-background softfile-welcome"
       style={{
         minHeight: '100svh',
-        height: '100svh',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        gap: 'clamp(1.1rem, 3.5vh, 2.25rem)',
-        padding: 'clamp(1rem, 3vh, 2rem) 1.25rem',
+        justifyContent: 'space-between',
+        gap: 'clamp(1.25rem, 3.5vh, 2.5rem)',
+        padding: 'clamp(3rem, 10vh, 7rem) clamp(1.25rem, 5vw, 4rem) clamp(3.5rem, 10vh, 6rem)',
         fontFamily: 'var(--font-outfit, sans-serif)',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      {/* Top: Logo */}
-      <div style={{ position: 'relative', zIndex: 1, animation: 'fadeIn 0.6s ease both' }}>
-        <PhotogenicsLogo size="6.25rem" />
-      </div>
-
-      {/* Middle: Heading + Buttons */}
       <div
         style={{
           position: 'relative',
           zIndex: 1,
           width: '100%',
-          maxWidth: '380px',
+          maxWidth: '600px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 'clamp(1rem, 3vh, 1.75rem)',
+          gap: 'clamp(1.6rem, 5vh, 4rem)',
         }}
       >
+        <div style={{ animation: 'fadeIn 0.6s ease both' }}>
+          <PhotogenicsLogo size="3.95rem" />
+        </div>
+
         <h1
           style={{
             fontFamily: 'var(--font-outfit, sans-serif)',
-            fontSize: 'clamp(2.65rem, 12vw, 4.25rem)',
+            fontSize: 'clamp(3.25rem, 12vw, 6.9rem)',
             fontWeight: 800,
             color: '#0a0a0a',
-            letterSpacing: '0.02em',
-            lineHeight: 1,
+            letterSpacing: '0',
+            lineHeight: 0.9,
             textAlign: 'center',
             animation: 'fadeUp 0.7s ease 0.1s both',
           }}
@@ -110,7 +107,7 @@ function SelectorView({
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
-            gap: '0.55rem',
+            gap: 'clamp(1.1rem, 3vh, 2rem)',
             animation: 'fadeUp 0.7s ease 0.25s both',
           }}
         >
@@ -123,27 +120,33 @@ function SelectorView({
                 disabled={!hasFile}
                 style={{
                   width: '100%',
-                  padding: '0.95rem 1.5rem',
-                  background: hasFile ? '#0a0a0a' : 'rgba(0,0,0,0.06)',
-                  color: hasFile ? '#ffffff' : 'rgba(0,0,0,0.28)',
-                  border: hasFile ? 'none' : '1px solid rgba(0,0,0,0.1)',
-                  borderRadius: '6px',
-                  fontSize: '0.95rem',
+                  minHeight: 'clamp(3rem, 7vw, 4.2rem)',
+                  padding: '0.55rem clamp(1rem, 4vw, 2rem)',
+                  background: 'rgba(255,255,255,0.72)',
+                  color: hasFile ? '#050505' : 'rgba(0,0,0,0.28)',
+                  border: hasFile ? '3px solid #050505' : '3px solid rgba(0,0,0,0.18)',
+                  borderRadius: '7px',
+                  fontSize: 'clamp(1.55rem, 4vw, 2.3rem)',
                   fontWeight: 700,
-                  letterSpacing: '0.06em',
+                  letterSpacing: '0',
                   cursor: hasFile ? 'pointer' : 'not-allowed',
                   fontFamily: 'inherit',
-                  transition: 'transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease',
+                  lineHeight: 1,
+                  transition: 'transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease',
                   animationDelay: `${0.3 + i * 0.08}s`,
                 }}
                 onMouseEnter={(e) => {
                   if (hasFile) {
                     e.currentTarget.style.transform = 'translateY(-1px)'
-                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.14)'
+                    e.currentTarget.style.background = '#050505'
+                    e.currentTarget.style.color = '#ffffff'
+                    e.currentTarget.style.boxShadow = '0 8px 28px rgba(0,0,0,0.14)'
                   }
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = ''
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.72)'
+                  e.currentTarget.style.color = hasFile ? '#050505' : 'rgba(0,0,0,0.28)'
                   e.currentTarget.style.boxShadow = ''
                 }}
                 onMouseDown={(e) => {
@@ -157,20 +160,39 @@ function SelectorView({
               </button>
             )
           })}
-          <p
-            style={{
-              color: 'rgba(0,0,0,0.72)',
-              fontSize: 'clamp(0.72rem, 2.6vw, 0.8rem)',
-              fontWeight: 700,
-              letterSpacing: '0.02em',
-              lineHeight: 1.5,
-              marginTop: '0.15rem',
-              textAlign: 'center',
-            }}
-          >
-            Link ini aktif selama 2 x 24 jam
-          </p>
         </div>
+      </div>
+
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          width: '100%',
+          maxWidth: '720px',
+          color: '#050505',
+          textAlign: 'center',
+          animation: 'fadeUp 0.7s ease 0.4s both',
+        }}
+      >
+        <p
+          style={{
+            fontSize: 'clamp(1.05rem, 3vw, 1.9rem)',
+            fontWeight: 400,
+            lineHeight: 1.35,
+          }}
+        >
+          Terima kasih sudah berfoto di Photogenics
+        </p>
+        <p
+          style={{
+            marginTop: '0.25rem',
+            fontSize: 'clamp(1.08rem, 3vw, 1.9rem)',
+            fontWeight: 800,
+            lineHeight: 1.35,
+          }}
+        >
+          Jangan lupa, link ini aktif selama 3 x 24 jam
+        </p>
       </div>
     </div>
   )
