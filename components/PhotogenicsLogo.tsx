@@ -13,6 +13,9 @@ export function PhotogenicsLogo({
 }: LogoProps) {
   const opacityMatch = color.match(/rgba?\([^,]+,[^,]+,[^,]+,\s*([\d.]+)\)/)
   const opacity = opacityMatch ? Number(opacityMatch[1]) : 1
+  const filter = color.includes('255') || color.toLowerCase() === '#ffffff'
+    ? 'invert(1)'
+    : undefined
 
   return (
     <Image
@@ -23,9 +26,10 @@ export function PhotogenicsLogo({
       priority
       style={{
         display: 'block',
-        width: 'auto',
-        height: size,
+        width: `min(90vw, calc(${size} * 4.4286))`,
+        height: 'auto',
         opacity,
+        filter,
         userSelect: 'none',
       }}
     />

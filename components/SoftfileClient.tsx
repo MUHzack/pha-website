@@ -59,12 +59,14 @@ function SelectorView({
     <div
       className="photogenics-background"
       style={{
-        minHeight: '100vh',
+        minHeight: '100svh',
+        height: '100svh',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 'clamp(2rem, 5vh, 3.5rem) 1.5rem',
+        justifyContent: 'center',
+        gap: 'clamp(1.1rem, 3.5vh, 2.25rem)',
+        padding: 'clamp(1rem, 3vh, 2rem) 1.25rem',
         fontFamily: 'var(--font-outfit, sans-serif)',
         position: 'relative',
         overflow: 'hidden',
@@ -72,7 +74,7 @@ function SelectorView({
     >
       {/* Top: Logo */}
       <div style={{ position: 'relative', zIndex: 1, animation: 'fadeIn 0.6s ease both' }}>
-        <PhotogenicsLogo size="1.25rem" />
+        <PhotogenicsLogo size="6.25rem" />
       </div>
 
       {/* Middle: Heading + Buttons */}
@@ -85,16 +87,16 @@ function SelectorView({
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 'clamp(2rem, 5vh, 3rem)',
+          gap: 'clamp(1rem, 3vh, 1.75rem)',
         }}
       >
         <h1
           style={{
-            fontFamily: 'var(--font-bebas, sans-serif)',
-            fontSize: 'clamp(4.5rem, 20vw, 7rem)',
-            fontWeight: 400,
+            fontFamily: 'var(--font-outfit, sans-serif)',
+            fontSize: 'clamp(2.65rem, 12vw, 4.25rem)',
+            fontWeight: 800,
             color: '#0a0a0a',
-            letterSpacing: '0.06em',
+            letterSpacing: '0.02em',
             lineHeight: 1,
             textAlign: 'center',
             animation: 'fadeUp 0.7s ease 0.1s both',
@@ -108,7 +110,7 @@ function SelectorView({
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
-            gap: '0.65rem',
+            gap: '0.55rem',
             animation: 'fadeUp 0.7s ease 0.25s both',
           }}
         >
@@ -121,7 +123,7 @@ function SelectorView({
                 disabled={!hasFile}
                 style={{
                   width: '100%',
-                  padding: '1.05rem 2rem',
+                  padding: '0.95rem 1.5rem',
                   background: hasFile ? '#0a0a0a' : 'rgba(0,0,0,0.06)',
                   color: hasFile ? '#ffffff' : 'rgba(0,0,0,0.28)',
                   border: hasFile ? 'none' : '1px solid rgba(0,0,0,0.1)',
@@ -155,24 +157,20 @@ function SelectorView({
               </button>
             )
           })}
+          <p
+            style={{
+              color: 'rgba(0,0,0,0.72)',
+              fontSize: 'clamp(0.72rem, 2.6vw, 0.8rem)',
+              fontWeight: 700,
+              letterSpacing: '0.02em',
+              lineHeight: 1.5,
+              marginTop: '0.15rem',
+              textAlign: 'center',
+            }}
+          >
+            Link ini aktif selama 2 x 24 jam
+          </p>
         </div>
-      </div>
-
-      {/* Bottom: Footer */}
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          textAlign: 'center',
-          animation: 'fadeIn 0.7s ease 0.5s both',
-        }}
-      >
-        <p style={{ color: 'rgba(0,0,0,0.58)', fontSize: '0.8rem', letterSpacing: '0.02em', marginBottom: '0.3rem' }}>
-          Terima kasih sudah berfoto di Photogenics
-        </p>
-        <p style={{ color: 'rgba(0,0,0,0.8)', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.02em' }}>
-          Jangan lupa, link ini aktif selama 2 x 24 jam
-        </p>
       </div>
     </div>
   )
@@ -216,7 +214,7 @@ function DownloadView({
 
   return (
     <div
-      className="photogenics-background"
+      className="download-geometric-background"
       style={{
         minHeight: '100vh',
         display: 'flex',

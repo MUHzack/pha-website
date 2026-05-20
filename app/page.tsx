@@ -3,9 +3,9 @@ import { PhotogenicsLogo } from '@/components/PhotogenicsLogo'
 export default function HomePage() {
   return (
     <div
-      className="photogenics-background"
       style={{
         minHeight: '100vh',
+        background: '#0a0a0a',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -15,10 +15,10 @@ export default function HomePage() {
         fontFamily: 'var(--font-outfit, sans-serif)',
       }}
     >
-      <PhotogenicsLogo size="1.35rem" />
+      <PhotogenicsLogo color="rgba(255,255,255,0.5)" size="1.35rem" />
       <p
         style={{
-          color: 'rgba(0,0,0,0.55)',
+          color: 'rgba(255,255,255,0.25)',
           fontSize: '0.85rem',
           letterSpacing: '0.04em',
           textAlign: 'center',
