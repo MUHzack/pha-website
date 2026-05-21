@@ -98,6 +98,15 @@ body {
   background-position: center;
 }
 
+.softfile-format-list {
+  max-width: min(100%, 39rem);
+}
+
+.softfile-format-button {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+  text-align: center;
+}
+
 .download-geometric-background {
   background-color: #ffffff;
   background-image:
@@ -112,8 +121,33 @@ body {
   }
 }
 
+@media (max-width: 380px) {
+  .softfile-format-button {
+    font-size: 1.05rem !important;
+  }
+}
+
 @media (min-width: 900px) {
   .softfile-welcome {
     background-position: center 42%;
+  }
+
+  .softfile-format-list {
+    max-width: 50rem;
+  }
+
+  .softfile-format-button {
+    min-height: 3.55rem !important;
+  }
+}
+
+@media (min-width: 1120px) and (min-height: 680px) {
+  .softfile-format-list {
+    flex-direction: row !important;
+  }
+
+  .softfile-format-button {
+    aspect-ratio: 3.9 / 1;
+    min-width: 0;
   }
 }

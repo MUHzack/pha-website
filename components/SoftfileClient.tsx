@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import type { SessionData, FileKind } from '@/types/session'
 import { PhotogenicsLogo } from './PhotogenicsLogo'
 import { getPublicUrl } from '@/lib/supabase'
@@ -64,9 +65,9 @@ function SelectorView({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: 'clamp(1.25rem, 3.5vh, 2.5rem)',
-        padding: 'clamp(3rem, 10vh, 7rem) clamp(1.25rem, 5vw, 4rem) clamp(3.5rem, 10vh, 6rem)',
-        fontFamily: 'var(--font-outfit, sans-serif)',
+        gap: 'clamp(1.5rem, 4vh, 3rem)',
+        padding: 'clamp(4.25rem, 11vh, 7.5rem) clamp(1.5rem, 5vw, 4rem) clamp(4.4rem, 10vh, 6.5rem)',
+        fontFamily: 'var(--font-outfit), Inter, Arial, sans-serif',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -76,25 +77,42 @@ function SelectorView({
           position: 'relative',
           zIndex: 1,
           width: '100%',
-          maxWidth: '600px',
+          maxWidth: 'min(100%, 720px)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 'clamp(1.6rem, 5vh, 4rem)',
+          gap: 'clamp(2.1rem, 7vh, 6.8rem)',
         }}
       >
-        <div style={{ animation: 'fadeIn 0.6s ease both' }}>
-          <PhotogenicsLogo size="3.95rem" />
+        <div
+          style={{
+            animation: 'fadeIn 0.6s ease both',
+            width: 'clamp(8.5rem, 32vw, 13.5rem)',
+          }}
+        >
+          <Image
+            src="/Photogenics.svg"
+            alt="Photogenics"
+            width={320}
+            height={72}
+            priority
+            style={{
+              display: 'block',
+              width: '100%',
+              height: 'auto',
+              userSelect: 'none',
+            }}
+          />
         </div>
 
         <h1
           style={{
-            fontFamily: 'var(--font-outfit, sans-serif)',
-            fontSize: 'clamp(3.25rem, 12vw, 6.9rem)',
-            fontWeight: 800,
+            fontFamily: 'inherit',
+            fontSize: 'clamp(3rem, 12vw, 6.75rem)',
+            fontWeight: 600,
             color: '#0a0a0a',
-            letterSpacing: '0',
-            lineHeight: 0.9,
+            letterSpacing: '0.035em',
+            lineHeight: 1,
             textAlign: 'center',
             animation: 'fadeUp 0.7s ease 0.1s both',
           }}
@@ -103,11 +121,12 @@ function SelectorView({
         </h1>
 
         <div
+          className="softfile-format-list"
           style={{
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
-            gap: 'clamp(1.1rem, 3vh, 2rem)',
+            gap: 'clamp(0.9rem, 2.5vh, 1.5rem)',
             animation: 'fadeUp 0.7s ease 0.25s both',
           }}
         >
@@ -118,16 +137,17 @@ function SelectorView({
                 key={kind}
                 onClick={() => hasFile && onSelect(kind)}
                 disabled={!hasFile}
+                className="softfile-format-button"
                 style={{
                   width: '100%',
-                  minHeight: 'clamp(3rem, 7vw, 4.2rem)',
-                  padding: '0.55rem clamp(1rem, 4vw, 2rem)',
-                  background: 'rgba(255,255,255,0.72)',
+                  minHeight: 'clamp(2.15rem, 7vw, 3.4rem)',
+                  padding: '0.38rem clamp(1rem, 4vw, 2rem)',
+                  background: 'rgba(255,255,255,0.62)',
                   color: hasFile ? '#050505' : 'rgba(0,0,0,0.28)',
-                  border: hasFile ? '3px solid #050505' : '3px solid rgba(0,0,0,0.18)',
-                  borderRadius: '7px',
-                  fontSize: 'clamp(1.55rem, 4vw, 2.3rem)',
-                  fontWeight: 700,
+                  border: hasFile ? '2px solid #050505' : '2px solid rgba(0,0,0,0.18)',
+                  borderRadius: '4px',
+                  fontSize: 'clamp(1.18rem, 4.6vw, 2.05rem)',
+                  fontWeight: 800,
                   letterSpacing: '0',
                   cursor: hasFile ? 'pointer' : 'not-allowed',
                   fontFamily: 'inherit',
@@ -171,6 +191,7 @@ function SelectorView({
           maxWidth: '720px',
           color: '#050505',
           textAlign: 'center',
+          padding: '0 0.5rem',
           animation: 'fadeUp 0.7s ease 0.4s both',
         }}
       >
@@ -178,7 +199,7 @@ function SelectorView({
           style={{
             fontSize: 'clamp(1.05rem, 3vw, 1.9rem)',
             fontWeight: 400,
-            lineHeight: 1.35,
+            lineHeight: 1.4,
           }}
         >
           Terima kasih sudah berfoto di Photogenics
@@ -188,10 +209,10 @@ function SelectorView({
             marginTop: '0.25rem',
             fontSize: 'clamp(1.08rem, 3vw, 1.9rem)',
             fontWeight: 800,
-            lineHeight: 1.35,
+            lineHeight: 1.4,
           }}
         >
-          Jangan lupa, link ini aktif selama 3 x 24 jam
+          Link aktif selama 3 x 24 jam
         </p>
       </div>
     </div>
