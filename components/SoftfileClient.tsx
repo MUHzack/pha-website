@@ -65,8 +65,8 @@ function SelectorView({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: 'clamp(1.5rem, 4vh, 3rem)',
-        padding: 'clamp(4.25rem, 11vh, 7.5rem) clamp(1.5rem, 5vw, 4rem) clamp(4.4rem, 10vh, 6.5rem)',
+        gap: 'clamp(0.8rem, 2.5vh, 1.6rem)',
+        padding: 'clamp(4.25rem, 11vh, 7.5rem) clamp(1.5rem, 5vw, 4rem) clamp(3.6rem, 8vh, 5.2rem)',
         fontFamily: 'var(--font-outfit), Inter, Arial, sans-serif',
         position: 'relative',
         overflow: 'hidden',
@@ -108,8 +108,8 @@ function SelectorView({
         <h1
           style={{
             fontFamily: 'inherit',
-            fontSize: 'clamp(3rem, 12vw, 6.75rem)',
-            fontWeight: 600,
+            fontSize: 'clamp(2.6rem, 10vw, 5.8rem)',
+            fontWeight: 800,
             color: '#0a0a0a',
             letterSpacing: '0.035em',
             lineHeight: 1,

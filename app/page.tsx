@@ -24,8 +24,7 @@ export default function HomePage() {
           textAlign: 'center',
           maxWidth: '260px',
           lineHeight: 1.6,
-        }}
-      >
+        }}>
         Scan QR code pada kertas foto kamu untuk mengakses softfile.
       </p>
     </div>
