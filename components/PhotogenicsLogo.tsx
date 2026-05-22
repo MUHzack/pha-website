@@ -19,7 +19,7 @@ export function PhotogenicsLogo({
 
   return (
     <Image
-      src="/photogenics.svg"
+      src="/Photogenics.svg"
       alt="Photogenics"
       width={248}
       height={56}
