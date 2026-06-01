@@ -13,8 +13,7 @@ export default function HomePage() {
         gap: '1.5rem',
         padding: '2rem',
         fontFamily: 'var(--font-outfit, sans-serif)',
-      }}
-    >
+      }}>
       <PhotogenicsLogo color="rgba(255,255,255,0.5)" size="1.35rem" />
       <p
         style={{
