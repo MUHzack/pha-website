@@ -13,8 +13,7 @@ export function ProcessingSession() {
         padding: 'clamp(2rem, 5vh, 3.5rem) 1.5rem',
         fontFamily: 'var(--font-outfit, sans-serif)',
         textAlign: 'center',
-      }}
-    >
+      }}>
       <PhotogenicsLogo color="rgba(255,255,255,0.5)" size="1.25rem" />
 
       <div
@@ -24,9 +23,7 @@ export function ProcessingSession() {
           alignItems: 'center',
           gap: '1.5rem',
           animation: 'fadeUp 0.6s ease both',
-        }}
-      >
-        {/* Pulsing ring */}
+        }}>
         <div
           style={{
             width: '56px',
@@ -37,9 +34,7 @@ export function ProcessingSession() {
             animation: 'spin 1s linear infinite',
             marginBottom: '0.5rem',
           }}
-          aria-hidden="true"
-        />
-
+          aria-hidden="true"/>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
         <h1
@@ -50,8 +45,7 @@ export function ProcessingSession() {
             color: '#ffffff',
             letterSpacing: '0.06em',
             lineHeight: 1,
-          }}
-        >
+          }}>
           SEDANG DIPROSES
         </h1>
 
@@ -72,8 +66,7 @@ export function ProcessingSession() {
             color: 'rgba(255,255,255,0.2)',
             fontSize: '0.75rem',
             marginTop: '0.5rem',
-          }}
-        >
+          }}>
           Halaman ini akan otomatis siap dalam beberapa menit.
         </p>
       </div>

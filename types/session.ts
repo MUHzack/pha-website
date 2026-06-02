@@ -1,12 +1,11 @@
-// DB (sesuai Supabase)
 export type FileKindDB =
   | 'final'
   | 'live_photo'
   | 'gif'
   | 'raw'
   | 'metadata'
+  | 'other'
 
-// UI (yang dipakai komponen)
 export type FileKind = 'photo' | 'live_photo' | 'gif'
 
 export interface SessionFile {
@@ -23,11 +22,11 @@ export interface SessionFile {
   updated_at: string
 }
 
-// Grouped by kind for easier use in UI
 export interface SessionData {
   sessionId: string
   files: SessionFile[]
   photo: SessionFile | null
   livePhoto: SessionFile | null
   gif: SessionFile | null
+  shots: SessionFile[]
 }

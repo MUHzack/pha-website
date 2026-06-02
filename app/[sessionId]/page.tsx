@@ -33,7 +33,7 @@ export default async function SessionPage({ params }: Props) {
   }
 
   const hasAnyFile =
-    session.photo || session.livePhoto || session.gif
+    session.photo || session.livePhoto || session.gif || (session.shots && session.shots.length > 0)
 
   if (!hasAnyFile) {
     return <ProcessingSession />

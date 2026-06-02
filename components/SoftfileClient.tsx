@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
-import type { SessionData, FileKind } from '@/types/session'
+import type { SessionData, FileKind, SessionFile } from '@/types/session'
 import { PhotogenicsLogo } from './PhotogenicsLogo'
 import { getPublicUrl } from '@/lib/supabase'
 
@@ -19,19 +18,122 @@ interface Props {
 }
 
 export function SoftfileClient({ session }: Props) {
-  const [selectedKind, setSelectedKind] = useState<FileKind | null>(null)
+  return (
+    <div
+      className="download-geometric-background"
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: 'clamp(2rem, 5vh, 3rem) 1.5rem',
+        fontFamily: 'var(--font-outfit, sans-serif)',
+      }}>
+      <div style={{ animation: 'fadeIn 0.5s ease both', marginBottom: '1.5rem' }}>
+        <PhotogenicsLogo size="1.35rem" />
+      </div>
 
-  if (selectedKind) {
-    return (
-      <DownloadView
-        session={session}
-        kind={selectedKind}
-        onBack={() => setSelectedKind(null)}
-      />
-    )
-  }
+      <div 
+        style={{ 
+          color: 'rgba(0,0,0,0.45)', 
+          fontSize: '0.82rem',
+          fontWeight: 500,
+          marginBottom: '2.5rem',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '0.5rem',
+          animation: 'fadeUp 0.6s ease 0.15s both'
+        }}>
+        <span style={{ letterSpacing: '0.02em' }}>Scroll ke bawah untuk file lainnya</span>
+        <svg 
+          width="18" 
+          height="18" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2.5" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
+        >
+          <path d="M12 5v14M19 12l-7 7-7-7"/>
+        </svg>
+      </div>
 
-  return <SelectorView session={session} onSelect={setSelectedKind} />
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '460px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '3rem',
+          flex: 1,
+        }}>
+        {FILE_KINDS.map((kind, index) => {
+          const fileUrl = getFileUrl(session, kind)
+          if (!fileUrl) return null
+
+          return (
+            <MediaItem
+              key={kind}
+              session={session}
+              kind={kind}
+              fileUrl={fileUrl}
+              index={index}/>
+          )
+        })}
+
+        {session.shots && session.shots.length > 0 && session.shots.map((shot, idx) => {
+          const fileUrl = getPublicUrl(shot.storage_bucket, shot.storage_path)
+          return (
+            <ShotItem 
+              key={shot.id || `shot-${idx}`} 
+              session={session} 
+              shot={shot} 
+              fileUrl={fileUrl} 
+              index={FILE_KINDS.length + idx} 
+              shotIndex={idx + 1} 
+            />
+          )
+        })}
+
+        {!FILE_KINDS.some(kind => getFileUrl(session, kind)) && (!session.shots || session.shots.length === 0) && (
+          <div style={{ color: '#999', fontSize: '0.9rem', textAlign: 'center', marginTop: '2rem' }}>
+            File tidak tersedia
+          </div>
+        )}
+      </div>
+
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '720px',
+          color: '#050505',
+          textAlign: 'center',
+          padding: '3rem 0.5rem 1rem',
+          animation: 'fadeUp 0.7s ease 0.4s both',
+        }}
+      >
+        <p
+          style={{
+            fontSize: 'clamp(1rem, 3vw, 1.2rem)',
+            fontWeight: 400,
+            lineHeight: 1.4,
+          }}>
+          Terima kasih sudah berfoto di Photogenics
+        </p>
+        <p
+          style={{
+            marginTop: '0.25rem',
+            fontSize: 'clamp(1rem, 3vw, 1.2rem)',
+            fontWeight: 800,
+            lineHeight: 1.4,
+          }}>
+          Link aktif selama 3 × 24 jam
+        </p>
+      </div>
+    </div>
+  )
 }
 
 // ─── Helper: get file by kind ─────────────────────────────────────────────────
@@ -47,190 +149,19 @@ function getFileUrl(session: SessionData, kind: FileKind): string | null {
   return getPublicUrl(file.storage_bucket, file.storage_path)
 }
 
-// ─── Selector View (dark, moody) ─────────────────────────────────────────────
+// ─── Media Item ─────────────────────────────────────────────────────────────
 
-function SelectorView({
-  session,
-  onSelect,
-}: {
-  session: SessionData
-  onSelect: (kind: FileKind) => void
-}) {
-  return (
-    <div
-      className="photogenics-background softfile-welcome"
-      style={{
-        minHeight: '100svh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 'clamp(0.8rem, 2.5vh, 1.6rem)',
-        padding: 'clamp(4.25rem, 11vh, 7.5rem) clamp(1.5rem, 5vw, 4rem) clamp(3.6rem, 8vh, 5.2rem)',
-        fontFamily: 'var(--font-outfit), Inter, Arial, sans-serif',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          width: '100%',
-          maxWidth: 'min(100%, 720px)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 'clamp(2.1rem, 7vh, 6.8rem)',
-        }}
-      >
-        <div
-          style={{
-            animation: 'fadeIn 0.6s ease both',
-            width: 'clamp(8.5rem, 32vw, 13.5rem)',
-          }}
-        >
-          <Image
-            src="/Photogenics.svg"
-            alt="Photogenics"
-            width={320}
-            height={72}
-            priority
-            style={{
-              display: 'block',
-              width: '100%',
-              height: 'auto',
-              userSelect: 'none',
-            }}
-          />
-        </div>
-
-        <h1
-          style={{
-            fontFamily: 'inherit',
-            fontSize: 'clamp(2.6rem, 10vw, 5.8rem)',
-            fontWeight: 800,
-            color: '#0a0a0a',
-            letterSpacing: '0.035em',
-            lineHeight: 1,
-            textAlign: 'center',
-            animation: 'fadeUp 0.7s ease 0.1s both',
-          }}
-        >
-          SOFTFILE
-        </h1>
-
-        <div
-          className="softfile-format-list"
-          style={{
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'clamp(0.9rem, 2.5vh, 1.5rem)',
-            animation: 'fadeUp 0.7s ease 0.25s both',
-          }}
-        >
-          {FILE_KINDS.map((kind, i) => {
-            const hasFile = Boolean(getFileUrl(session, kind))
-            return (
-              <button
-                key={kind}
-                onClick={() => hasFile && onSelect(kind)}
-                disabled={!hasFile}
-                className="softfile-format-button"
-                style={{
-                  width: '100%',
-                  minHeight: 'clamp(2.15rem, 7vw, 3.4rem)',
-                  padding: '0.38rem clamp(1rem, 4vw, 2rem)',
-                  background: 'rgba(255,255,255,0.62)',
-                  color: hasFile ? '#050505' : 'rgba(0,0,0,0.28)',
-                  border: hasFile ? '2px solid #050505' : '2px solid rgba(0,0,0,0.18)',
-                  borderRadius: '4px',
-                  fontSize: 'clamp(1.18rem, 4.6vw, 2.05rem)',
-                  fontWeight: 800,
-                  letterSpacing: '0',
-                  cursor: hasFile ? 'pointer' : 'not-allowed',
-                  fontFamily: 'inherit',
-                  lineHeight: 1,
-                  transition: 'transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease',
-                  animationDelay: `${0.3 + i * 0.08}s`,
-                }}
-                onMouseEnter={(e) => {
-                  if (hasFile) {
-                    e.currentTarget.style.transform = 'translateY(-1px)'
-                    e.currentTarget.style.background = '#050505'
-                    e.currentTarget.style.color = '#ffffff'
-                    e.currentTarget.style.boxShadow = '0 8px 28px rgba(0,0,0,0.14)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = ''
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.72)'
-                  e.currentTarget.style.color = hasFile ? '#050505' : 'rgba(0,0,0,0.28)'
-                  e.currentTarget.style.boxShadow = ''
-                }}
-                onMouseDown={(e) => {
-                  if (hasFile) e.currentTarget.style.transform = 'scale(0.98)'
-                }}
-                onMouseUp={(e) => {
-                  if (hasFile) e.currentTarget.style.transform = 'translateY(-1px)'
-                }}
-              >
-                {FILE_KIND_LABELS[kind]}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          width: '100%',
-          maxWidth: '720px',
-          color: '#050505',
-          textAlign: 'center',
-          padding: '0 0.5rem',
-          animation: 'fadeUp 0.7s ease 0.4s both',
-        }}
-      >
-        <p
-          style={{
-            fontSize: 'clamp(1.05rem, 3vw, 1.9rem)',
-            fontWeight: 400,
-            lineHeight: 1.4,
-          }}
-        >
-          Terima kasih sudah berfoto di Photogenics
-        </p>
-        <p
-          style={{
-            marginTop: '0.25rem',
-            fontSize: 'clamp(1.08rem, 3vw, 1.9rem)',
-            fontWeight: 800,
-            lineHeight: 1.4,
-          }}
-        >
-          Link aktif selama 3 x 24 jam
-        </p>
-      </div>
-    </div>
-  )
-}
-
-// ─── Download View (light, clean) ────────────────────────────────────────────
-
-function DownloadView({
+function MediaItem({
   session,
   kind,
-  onBack,
+  fileUrl,
+  index,
 }: {
   session: SessionData
   kind: FileKind
-  onBack: () => void
+  fileUrl: string
+  index: number
 }) {
-  const fileUrl = getFileUrl(session, kind)
   const [downloading, setDownloading] = useState(false)
 
   const handleDownload = async () => {
@@ -257,106 +188,173 @@ function DownloadView({
 
   return (
     <div
-      className="download-geometric-background"
       style={{
-        minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 'clamp(2rem, 5vh, 3rem) 1.5rem',
-        fontFamily: 'var(--font-outfit, sans-serif)',
-      }}
-    >
-      {/* Top: Logo */}
-      <div style={{ animation: 'fadeIn 0.5s ease both' }}>
-        <PhotogenicsLogo size="1.35rem" />
-      </div>
-
-      {/* Center: Media preview */}
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '460px',
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '2rem 0',
-          animation: 'fadeUp 0.6s ease 0.1s both',
-        }}
-      >
-        {fileUrl ? (
-          <MediaPreview url={fileUrl} kind={kind} />
-        ) : (
-          <div style={{ color: '#999', fontSize: '0.9rem', textAlign: 'center' }}>
-            File tidak tersedia
-          </div>
-        )}
-      </div>
-
-      {/* Bottom: Actions */}
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '400px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.6rem',
-          animation: 'fadeUp 0.6s ease 0.2s both',
-        }}
-      >
-        <button
-          onClick={handleDownload}
-          disabled={!fileUrl || downloading}
+        gap: '1rem',
+        animation: `fadeUp 0.6s ease ${0.1 + index * 0.1}s both`,
+      }}>
+      <div style={{ textAlign: 'center' }}>
+        <h2
           style={{
-            width: '100%',
-            padding: '1.05rem 2rem',
-            background: fileUrl && !downloading ? '#0a0a0a' : '#ccc',
-            color: '#ffffff',
-            border: 'none',
-            borderRadius: '999px',
-            fontSize: '0.95rem',
-            fontWeight: 600,
-            letterSpacing: '0.04em',
-            cursor: fileUrl && !downloading ? 'pointer' : 'not-allowed',
-            fontFamily: 'inherit',
-            transition: 'background 0.15s ease, transform 0.15s ease',
-          }}
-          onMouseEnter={(e) => {
-            if (fileUrl && !downloading) {
-              e.currentTarget.style.background = '#222'
-              e.currentTarget.style.transform = 'translateY(-1px)'
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = fileUrl && !downloading ? '#0a0a0a' : '#ccc'
-            e.currentTarget.style.transform = ''
-          }}
-        >
-          {downloading ? 'Mengunduh...' : 'Download'}
-        </button>
-
-        <button
-          onClick={onBack}
-          style={{
-            width: '100%',
-            padding: '0.7rem',
-            background: 'transparent',
-            color: 'rgba(0,0,0,0.4)',
-            border: 'none',
-            fontSize: '0.82rem',
+            fontSize: '1.2rem',
+            fontWeight: 700,
+            color: '#050505',
+            margin: 0,
             letterSpacing: '0.02em',
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            transition: 'color 0.15s ease',
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(0,0,0,0.7)' }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(0,0,0,0.4)' }}
-        >
-          ← Pilih format lain
-        </button>
+          }}>
+          {FILE_KIND_LABELS[kind]}
+        </h2>
       </div>
+
+      <MediaPreview url={fileUrl} kind={kind} />
+
+      <button
+        onClick={handleDownload}
+        disabled={downloading}
+        style={{
+          width: '100%',
+          padding: '1.05rem 2rem',
+          background: !downloading ? '#0a0a0a' : '#ccc',
+          color: '#ffffff',
+          border: 'none',
+          borderRadius: '999px',
+          fontSize: '0.95rem',
+          fontWeight: 600,
+          letterSpacing: '0.04em',
+          cursor: !downloading ? 'pointer' : 'not-allowed',
+          fontFamily: 'inherit',
+          transition: 'background 0.15s ease, transform 0.15s ease',
+        }}
+        onMouseEnter={(e) => {
+          if (!downloading) {
+            e.currentTarget.style.background = '#222'
+            e.currentTarget.style.transform = 'translateY(-1px)'
+          }
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = !downloading ? '#0a0a0a' : '#ccc'
+          e.currentTarget.style.transform = ''
+        }}
+        onMouseDown={(e) => {
+          if (!downloading) e.currentTarget.style.transform = 'scale(0.98)'
+        }}
+        onMouseUp={(e) => {
+          if (!downloading) e.currentTarget.style.transform = 'translateY(-1px)'
+        }}>
+        {downloading ? 'Mengunduh...' : `Download ${FILE_KIND_LABELS[kind]}`}
+      </button>
+    </div>
+  )
+}
+
+// ─── Shot Item ──────────────────────────────────────────────────────────────
+
+function ShotItem({
+  session,
+  shot,
+  fileUrl,
+  index,
+  shotIndex,
+}: {
+  session: SessionData
+  shot: SessionFile
+  fileUrl: string
+  index: number
+  shotIndex: number
+}) {
+  const [downloading, setDownloading] = useState(false)
+
+  const handleDownload = async () => {
+    if (!fileUrl || downloading) return
+    setDownloading(true)
+    try {
+      const response = await fetch(fileUrl)
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `photogenics-${session.sessionId}-shot-${shotIndex}.jpg`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch {
+      window.open(fileUrl, '_blank')
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+        animation: `fadeUp 0.6s ease ${0.1 + index * 0.1}s both`,
+      }}>
+      <div style={{ textAlign: 'center' }}>
+        <h2
+          style={{
+            fontSize: '1.2rem',
+            fontWeight: 700,
+            color: '#050505',
+            margin: 0,
+            letterSpacing: '0.02em',
+          }}>
+          Shot {shotIndex}
+        </h2>
+      </div>
+
+      <img 
+        src={fileUrl} 
+        alt={`Shot ${shotIndex}`} 
+        style={{
+          maxWidth: '100%',
+          maxHeight: '65vh',
+          objectFit: 'contain',
+          borderRadius: '4px',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.12)',
+        }} 
+      />
+
+      <button
+        onClick={handleDownload}
+        disabled={downloading}
+        style={{
+          width: '100%',
+          padding: '1.05rem 2rem',
+          background: !downloading ? '#0a0a0a' : '#ccc',
+          color: '#ffffff',
+          border: 'none',
+          borderRadius: '999px',
+          fontSize: '0.95rem',
+          fontWeight: 600,
+          letterSpacing: '0.04em',
+          cursor: !downloading ? 'pointer' : 'not-allowed',
+          fontFamily: 'inherit',
+          transition: 'background 0.15s ease, transform 0.15s ease',
+        }}
+        onMouseEnter={(e) => {
+          if (!downloading) {
+            e.currentTarget.style.background = '#222'
+            e.currentTarget.style.transform = 'translateY(-1px)'
+          }
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = !downloading ? '#0a0a0a' : '#ccc'
+          e.currentTarget.style.transform = ''
+        }}
+        onMouseDown={(e) => {
+          if (!downloading) e.currentTarget.style.transform = 'scale(0.98)'
+        }}
+        onMouseUp={(e) => {
+          if (!downloading) e.currentTarget.style.transform = 'translateY(-1px)'
+        }}
+      >
+        {downloading ? 'Mengunduh...' : `Download Shot ${shotIndex}`}
+      </button>
     </div>
   )
 }

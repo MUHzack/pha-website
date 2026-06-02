@@ -16,8 +16,7 @@ export function ExpiredSession() {
         padding: 'clamp(2rem, 5vh, 3.5rem) 1.5rem',
         fontFamily: 'var(--font-outfit, sans-serif)',
         textAlign: 'center',
-      }}
-    >
+      }}>
       <PhotogenicsLogo color="rgba(255,255,255,0.4)" size="1.25rem" />
 
       <div
@@ -27,8 +26,7 @@ export function ExpiredSession() {
           alignItems: 'center',
           gap: '1.25rem',
           animation: 'fadeUp 0.6s ease both',
-        }}
-      >
+        }}>
         {/* Icon: clock / hourglass in minimal style */}
         <div
           style={{
@@ -43,8 +41,7 @@ export function ExpiredSession() {
             fontSize: '1.4rem',
             marginBottom: '0.5rem',
           }}
-          aria-hidden="true"
-        >
+          aria-hidden="true">
           ⌛
         </div>
 
@@ -56,8 +53,7 @@ export function ExpiredSession() {
             color: '#ffffff',
             letterSpacing: '0.06em',
             lineHeight: 1,
-          }}
-        >
+          }}>
           LINK KEDALUWARSA
         </h1>
 
@@ -67,8 +63,7 @@ export function ExpiredSession() {
             fontSize: '0.875rem',
             lineHeight: 1.7,
             maxWidth: '280px',
-          }}
-        >
+          }}>
           Link softfile ini sudah tidak aktif.
           <br />
           Link hanya berlaku selama <strong style={{ color: 'rgba(255,255,255,0.7)' }}>3 hari</strong> setelah sesi foto.
@@ -80,8 +75,7 @@ export function ExpiredSession() {
           color: 'rgba(255,255,255,0.2)',
           fontSize: '0.75rem',
           letterSpacing: '0.04em',
-        }}
-      >
+        }}>
         Hubungi Photogenics jika ada pertanyaan.
       </p>
     </div>

@@ -21,10 +21,14 @@ export async function getSessionData(sessionId: string): Promise<SessionData | n
 
   const files = data as SessionFile[]
 
-  // ✅ mapping sesuai DB terbaru kamu
   const photo = files.find(f => f.kind === 'final')
   const livePhoto = files.find(f => f.kind === 'live_photo')
   const gif = files.find(f => f.kind === 'gif')
+  const shots = files.filter(f => 
+    (f.kind === 'raw' || f.kind === 'other') && 
+    f.storage_path.includes('/processed/shot-') && 
+    f.storage_path.endsWith('.jpg')
+  )
 
   return {
     sessionId,
@@ -32,10 +36,10 @@ export async function getSessionData(sessionId: string): Promise<SessionData | n
     photo: photo ?? null,
     livePhoto: livePhoto ?? null,
     gif: gif ?? null,
+    shots,
   }
 }
 
-// Helper: generate public URL dari storage
 export function getPublicUrl(bucket: string, path: string): string {
   const { data } = supabase.storage.from(bucket).getPublicUrl(path)
   return data.publicUrl
