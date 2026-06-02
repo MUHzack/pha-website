@@ -1,3 +1,5 @@
+'use client'
+
 import { PhotogenicsLogo } from './PhotogenicsLogo'
 
 export function InvalidSession() {
@@ -56,17 +58,46 @@ export function InvalidSession() {
           TIDAK DITEMUKAN
         </h1>
 
-        <p
+        <div
           style={{
-            color: 'rgba(255,255,255,0.45)',
+            color: 'rgba(255,255,255,0.5)',
             fontSize: '0.875rem',
-            lineHeight: 1.7,
-            maxWidth: '280px',
+            lineHeight: 1.6,
+            maxWidth: '320px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.75rem',
           }}>
-          Link yang kamu gunakan tidak valid atau sesi tidak ditemukan.
-          <br />
-          Pastikan kamu scan QR code yang benar.
-        </p>
+          <p>
+            <strong>Masih diproses?</strong> Jika kamu baru saja berfoto, mohon tunggu beberapa saat dan refresh halaman ini.
+          </p>
+          <p>
+            <strong>Link salah?</strong> Pastikan link yang kamu gunakan valid atau scan ulang QR code dengan benar.
+          </p>
+        </div>
+
+        <button
+          onClick={() => window.location.reload()}
+          style={{
+            marginTop: '1rem',
+            padding: '0.75rem 1.5rem',
+            background: '#ffffff',
+            color: '#000000',
+            border: 'none',
+            borderRadius: '100px',
+            fontFamily: 'var(--font-outfit, sans-serif)',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.opacity = '0.9')}
+          onMouseOut={(e) => (e.currentTarget.style.opacity = '1')}
+          onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.96)')}
+          onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+        >
+          Refresh Halaman
+        </button>
       </div>
 
       <p
