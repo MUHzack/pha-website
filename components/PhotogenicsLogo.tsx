@@ -19,12 +19,11 @@ export function PhotogenicsLogo({
 
   return (
     <Image
-      src="/Photogenics.svg"
+      src="/Photogenics.png"
       alt="Photogenics"
       width={248}
       height={56}
       priority
-      unoptimized
       style={{
         display: 'block',
         width: `min(90vw, calc(${size} * 4.4286))`,

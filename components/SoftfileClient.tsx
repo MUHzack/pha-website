@@ -83,21 +83,7 @@ export function SoftfileClient({ session }: Props) {
           )
         })}
 
-        {session.shots && session.shots.length > 0 && session.shots.map((shot, idx) => {
-          const fileUrl = getPublicUrl(shot.storage_bucket, shot.storage_path)
-          return (
-            <ShotItem 
-              key={shot.id || `shot-${idx}`} 
-              session={session} 
-              shot={shot} 
-              fileUrl={fileUrl} 
-              index={FILE_KINDS.length + idx} 
-              shotIndex={idx + 1} 
-            />
-          )
-        })}
-
-        {!FILE_KINDS.some(kind => getFileUrl(session, kind)) && (!session.shots || session.shots.length === 0) && (
+        {!FILE_KINDS.some(kind => getFileUrl(session, kind)) && (
           <div style={{ color: '#999', fontSize: '0.9rem', textAlign: 'center', marginTop: '2rem' }}>
             File tidak tersedia
           </div>
@@ -248,116 +234,6 @@ function MediaItem({
   )
 }
 
-// ─── Shot Item ──────────────────────────────────────────────────────────────
-
-function ShotItem({
-  session,
-  shot,
-  fileUrl,
-  index,
-  shotIndex,
-}: {
-  session: SessionData
-  shot: SessionFile
-  fileUrl: string
-  index: number
-  shotIndex: number
-}) {
-  const [downloading, setDownloading] = useState(false)
-
-  const handleDownload = async () => {
-    if (!fileUrl || downloading) return
-    setDownloading(true)
-    try {
-      const response = await fetch(fileUrl)
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `photogenics-${session.sessionId}-shot-${shotIndex}.jpg`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-    } catch {
-      window.open(fileUrl, '_blank')
-    } finally {
-      setDownloading(false)
-    }
-  }
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem',
-        animation: `fadeUp 0.6s ease ${0.1 + index * 0.1}s both`,
-      }}>
-      <div style={{ textAlign: 'center' }}>
-        <h2
-          style={{
-            fontSize: '1.2rem',
-            fontWeight: 700,
-            color: '#050505',
-            margin: 0,
-            letterSpacing: '0.02em',
-          }}>
-          Shot {shotIndex}
-        </h2>
-      </div>
-
-      <img 
-        src={fileUrl} 
-        alt={`Shot ${shotIndex}`} 
-        style={{
-          maxWidth: '100%',
-          maxHeight: '65vh',
-          objectFit: 'contain',
-          borderRadius: '4px',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.12)',
-        }} 
-      />
-
-      <button
-        onClick={handleDownload}
-        disabled={downloading}
-        style={{
-          width: '100%',
-          padding: '1.05rem 2rem',
-          background: !downloading ? '#0a0a0a' : '#ccc',
-          color: '#ffffff',
-          border: 'none',
-          borderRadius: '999px',
-          fontSize: '0.95rem',
-          fontWeight: 600,
-          letterSpacing: '0.04em',
-          cursor: !downloading ? 'pointer' : 'not-allowed',
-          fontFamily: 'inherit',
-          transition: 'background 0.15s ease, transform 0.15s ease',
-        }}
-        onMouseEnter={(e) => {
-          if (!downloading) {
-            e.currentTarget.style.background = '#222'
-            e.currentTarget.style.transform = 'translateY(-1px)'
-          }
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = !downloading ? '#0a0a0a' : '#ccc'
-          e.currentTarget.style.transform = ''
-        }}
-        onMouseDown={(e) => {
-          if (!downloading) e.currentTarget.style.transform = 'scale(0.98)'
-        }}
-        onMouseUp={(e) => {
-          if (!downloading) e.currentTarget.style.transform = 'translateY(-1px)'
-        }}
-      >
-        {downloading ? 'Mengunduh...' : `Download Shot ${shotIndex}`}
-      </button>
-    </div>
-  )
-}
 
 // ─── Media Preview ────────────────────────────────────────────────────────────
 
