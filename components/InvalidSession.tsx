@@ -31,20 +31,17 @@ export function InvalidSession() {
         }}>
         <div
           style={{
-            width: '48px',
-            height: '48px',
+            width: '56px',
+            height: '56px',
             borderRadius: '50%',
             border: '1.5px solid rgba(255,255,255,0.12)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'rgba(255,255,255,0.25)',
-            fontSize: '1.3rem',
+            borderTop: '1.5px solid rgba(255,255,255,0.6)',
+            animation: 'spin 1s linear infinite',
             marginBottom: '0.5rem',
           }}
-          aria-hidden="true">
-          ✕
-        </div>
+          aria-hidden="true"
+        />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
         <h1
           style={{
@@ -55,7 +52,7 @@ export function InvalidSession() {
             letterSpacing: '0.06em',
             lineHeight: 1,
           }}>
-          TIDAK DITEMUKAN
+          BELUM TERSEDIA
         </h1>
 
         <div
@@ -63,16 +60,16 @@ export function InvalidSession() {
             color: 'rgba(255,255,255,0.5)',
             fontSize: '0.875rem',
             lineHeight: 1.6,
-            maxWidth: '320px',
+            maxWidth: '340px',
             display: 'flex',
             flexDirection: 'column',
             gap: '0.75rem',
           }}>
           <p>
-            <strong>Masih diproses?</strong> Jika kamu baru saja berfoto, mohon tunggu beberapa saat dan refresh halaman ini.
+            <strong>Baru saja berfoto?</strong> File kamu sedang dalam proses upload ke server. Mohon tunggu beberapa saat dan klik refresh secara berkala.
           </p>
           <p>
-            <strong>Link salah?</strong> Pastikan link yang kamu gunakan valid atau scan ulang QR code dengan benar.
+            <strong>Sudah lama berfoto?</strong> Pastikan link yang kamu gunakan valid atau coba scan ulang QR code dengan benar.
           </p>
         </div>
 
