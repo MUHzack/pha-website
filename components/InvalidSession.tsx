@@ -91,20 +91,19 @@ export function InvalidSession() {
           onMouseOver={(e) => (e.currentTarget.style.opacity = '0.9')}
           onMouseOut={(e) => (e.currentTarget.style.opacity = '1')}
           onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.96)')}
-          onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-        >
+          onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}>
           Refresh Halaman
         </button>
       </div>
 
-      <p
+      {/* <p
         style={{
           color: 'rgba(255,255,255,0.2)',
           fontSize: '0.75rem',
           letterSpacing: '0.04em',
         }}>
         Hubungi Photogenics jika ada pertanyaan.
-      </p>
+      </p> */}
     </div>
   )
 }

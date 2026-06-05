@@ -70,14 +70,14 @@ export function ExpiredSession() {
         </p>
       </div>
 
-      <p
+      {/* <p
         style={{
           color: 'rgba(255,255,255,0.2)',
           fontSize: '0.75rem',
           letterSpacing: '0.04em',
         }}>
         Hubungi Photogenics jika ada pertanyaan.
-      </p>
+      </p> */}
     </div>
   )
 }
