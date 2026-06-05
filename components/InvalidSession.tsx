@@ -65,11 +65,11 @@ export function InvalidSession() {
             flexDirection: 'column',
             gap: '0.75rem',
           }}>
-          <p>
-            <strong>Baru saja berfoto?</strong> File kamu sedang dalam proses upload ke server. Mohon tunggu beberapa saat dan klik refresh secara berkala.
+          <p style={{ margin: 0 }}>
+            File kamu sedang dalam proses upload ke server. Mohon tunggu beberapa saat dan klik refresh secara berkala.
           </p>
-          <p>
-            <strong>Sudah lama berfoto?</strong> Silakan scan ulang QR code yang ada pada hasil cetak foto kamu. Jika masih belum muncul, hubungi kontak support kami.
+          <p style={{ margin: 0 }}>
+            Jika file tidak kunjung muncul, silakan hubungi kontak support kami.
           </p>
         </div>
 
