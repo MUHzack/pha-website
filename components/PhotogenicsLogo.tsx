@@ -26,7 +26,7 @@ export function PhotogenicsLogo({
       priority
       style={{
         display: 'block',
-        width: `min(90vw, calc(${size} * 4.4286))`,
+        width: `min(90vw, calc(${size} * 8.5))`,
         height: 'auto',
         opacity,
         filter,
