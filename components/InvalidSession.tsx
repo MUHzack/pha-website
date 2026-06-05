@@ -69,7 +69,7 @@ export function InvalidSession() {
             <strong>Baru saja berfoto?</strong> File kamu sedang dalam proses upload ke server. Mohon tunggu beberapa saat dan klik refresh secara berkala.
           </p>
           <p>
-            <strong>Sudah lama berfoto?</strong> Pastikan link yang kamu gunakan valid atau coba scan ulang QR code dengan benar.
+            <strong>Sudah lama berfoto?</strong> Silakan scan ulang QR code yang ada pada hasil cetak foto kamu. Jika masih belum muncul, hubungi kontak support kami.
           </p>
         </div>
 
