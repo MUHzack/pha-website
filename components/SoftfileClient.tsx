@@ -159,7 +159,7 @@ function MediaItem({
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      const ext = (kind === 'gif' || kind === 'live_photo') ? 'mp4' : 'jpg'
+      const ext = kind === 'gif' ? 'gif' : kind === 'live_photo' ? 'mov' : 'jpg'
       a.download = `photogenics-${session.sessionId}.${ext}`
       document.body.appendChild(a)
       a.click()
@@ -246,7 +246,7 @@ function MediaPreview({ url, kind }: { url: string; kind: FileKind }) {
     boxShadow: '0 8px 40px rgba(0,0,0,0.12)',
   }
 
-  if (kind === 'live_photo' || kind === 'gif') {
+  if (kind === 'live_photo') {
     return <video src={url} autoPlay loop muted playsInline style={sharedStyle} />
   }
 
