@@ -173,7 +173,7 @@ function MediaItem({
     }
   }
 
-  return (
+  return (    
     <div
       style={{
         display: 'flex',
@@ -247,7 +247,7 @@ function MediaPreview({ url, kind }: { url: string; kind: FileKind }) {
     boxShadow: '0 8px 40px rgba(0,0,0,0.12)',
   }
 
-  if (kind === 'live_photo') {
+  if (kind === 'live_photo' || kind === 'gif') {
     return <video src={url} autoPlay loop muted playsInline style={sharedStyle} />
   }
 
