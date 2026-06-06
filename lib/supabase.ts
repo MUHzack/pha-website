@@ -41,6 +41,9 @@ export async function getSessionData(sessionId: string): Promise<SessionData | n
 }
 
 export function getPublicUrl(bucket: string, path: string): string {
+  if (bucket === 'photogenics-media-db' && process.env.NEXT_PUBLIC_S3_PUBLIC_URL) {
+    return `${process.env.NEXT_PUBLIC_S3_PUBLIC_URL}/${bucket}/${path}`
+  }
   const { data } = supabase.storage.from(bucket).getPublicUrl(path)
   return data.publicUrl
 }
