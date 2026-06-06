@@ -71,6 +71,9 @@ export function InvalidSession() {
           <p style={{ margin: 0 }}>
             Jika file tidak kunjung muncul, silakan hubungi kontak support kami.
           </p>
+          <a href="https://wa.me/6287731449261" target="_blank" rel="noopener noreferrer">
+            Klik Disini!
+          </a>
         </div>
 
         <button
