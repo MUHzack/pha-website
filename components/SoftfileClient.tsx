@@ -159,6 +159,7 @@ function MediaItem({
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
+      // const ext = (kind === 'gif' || kind === 'live_photo') ? 'mp4' : 'jpg' -> Fixed
       const ext = kind === 'gif' ? 'gif' : kind === 'live_photo' ? 'mov' : 'jpg'
       a.download = `photogenics-${session.sessionId}.${ext}`
       document.body.appendChild(a)
