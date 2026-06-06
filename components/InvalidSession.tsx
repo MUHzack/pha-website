@@ -71,8 +71,34 @@ export function InvalidSession() {
           <p style={{ margin: 0 }}>
             Jika file tidak kunjung muncul, silakan hubungi kontak support kami.
           </p>
-          <a href="https://wa.me/6287731449261" target="_blank" rel="noopener noreferrer">
-            Klik Disini!
+          <a
+            href="https://wa.me/6287731449261"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0.9rem 1.6rem',
+              marginTop: '0.25rem',
+              background: 'linear-gradient(135deg, #00c8ff 0%, #00ff94 100%)',
+              color: '#020617',
+              fontWeight: 700,
+              borderRadius: '999px',
+              textDecoration: 'none',
+              boxShadow: '0 18px 45px rgba(0, 200, 255, 0.18)',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 22px 55px rgba(0, 200, 255, 0.25)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 18px 45px rgba(0, 200, 255, 0.18)';
+            }}
+          >
+            Hubungi Support via WhatsApp
           </a>
         </div>
 
