@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import type { SessionData, FileKind, SessionFile } from '@/types/session'
 import { PhotogenicsLogo } from './PhotogenicsLogo'
 import { getPublicUrl } from '@/lib/supabase'
@@ -18,6 +19,17 @@ interface Props {
 }
 
 export function SoftfileClient({ session }: Props) {
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!session.livePhoto || !session.gif) {
+      const interval = setInterval(() => {
+        router.refresh()
+      }, 4000)
+      return () => clearInterval(interval)
+    }
+  }, [session.livePhoto, session.gif, router])
+
   return (
     <div
       className="download-geometric-background"
@@ -71,7 +83,12 @@ export function SoftfileClient({ session }: Props) {
         }}>
         {FILE_KINDS.map((kind, index) => {
           const fileUrl = getFileUrl(session, kind)
-          if (!fileUrl) return null
+          if (!fileUrl) {
+            if (kind === 'live_photo' || kind === 'gif') {
+              return <ProcessingItem key={kind} kind={kind} index={index} />
+            }
+            return null
+          }
 
           return (
             <MediaItem
@@ -82,12 +99,6 @@ export function SoftfileClient({ session }: Props) {
               index={index}/>
           )
         })}
-
-        {!FILE_KINDS.some(kind => getFileUrl(session, kind)) && (
-          <div style={{ color: '#999', fontSize: '0.9rem', textAlign: 'center', marginTop: '2rem' }}>
-            File tidak tersedia
-          </div>
-        )}
       </div>
 
       <div
@@ -298,4 +309,60 @@ function MediaPreview({ url, kind }: { url: string; kind: FileKind }) {
   }
 
   return <img src={url} alt={`Hasil ${kind} kamu`} style={sharedStyle} />
+}
+
+function ProcessingItem({ kind, index }: { kind: FileKind; index: number }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+        animation: `fadeUp 0.6s ease ${0.1 + index * 0.1}s both`,
+      }}>
+      <div style={{ textAlign: 'center' }}>
+        <h2
+          style={{
+            fontSize: '1.2rem',
+            fontWeight: 700,
+            color: '#050505',
+            margin: 0,
+            letterSpacing: '0.02em',
+          }}>
+          {FILE_KIND_LABELS[kind]}
+        </h2>
+      </div>
+
+      <div style={{
+        width: '100%',
+        height: '400px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(255, 255, 255, 0.4)',
+        backdropFilter: 'blur(10px)',
+        borderRadius: '8px',
+        border: '1px dashed rgba(0, 0, 0, 0.15)',
+        gap: '1rem',
+      }}>
+        <div style={{
+          width: '32px',
+          height: '32px',
+          borderRadius: '50%',
+          border: '3px solid rgba(0,0,0,0.1)',
+          borderTopColor: '#000',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <span style={{ fontSize: '0.9rem', color: '#666', fontWeight: 500 }}>
+          Sedang menyiapkan media HD...
+        </span>
+      </div>
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  )
 }
