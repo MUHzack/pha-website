@@ -40,9 +40,16 @@ export async function getSessionData(sessionId: string): Promise<SessionData | n
   }
 }
 
-export function getPublicUrl(bucket: string, path: string): string {
+export function getPublicUrl(bucket: string, path: string, options?: { width?: number; quality?: number }): string {
   if (bucket === 'photogenics-media-db' && process.env.NEXT_PUBLIC_S3_PUBLIC_URL) {
-    return `${process.env.NEXT_PUBLIC_S3_PUBLIC_URL}/${bucket}/${path}`
+    const baseUrl = `${process.env.NEXT_PUBLIC_S3_PUBLIC_URL}/${bucket}/${path}`
+    if (options?.width || options?.quality) {
+      const params = new URLSearchParams()
+      if (options.width) params.set('width', String(options.width))
+      if (options.quality) params.set('quality', String(options.quality))
+      return `${baseUrl}?${params.toString()}`
+    }
+    return baseUrl
   }
   const { data } = supabase.storage.from(bucket).getPublicUrl(path)
   return data.publicUrl

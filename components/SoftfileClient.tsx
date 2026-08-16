@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { SessionData, FileKind, SessionFile } from '@/types/session'
 import { PhotogenicsLogo } from './PhotogenicsLogo'
@@ -82,8 +82,8 @@ export function SoftfileClient({ session }: Props) {
           flex: 1,
         }}>
         {FILE_KINDS.map((kind, index) => {
-          const fileUrl = getFileUrl(session, kind)
-          if (!fileUrl) {
+          const file = kind === 'photo' ? session.photo : kind === 'live_photo' ? session.livePhoto : session.gif
+          if (!file) {
             if (kind === 'live_photo' || kind === 'gif') {
               return <ProcessingItem key={kind} kind={kind} index={index} />
             }
@@ -95,7 +95,7 @@ export function SoftfileClient({ session }: Props) {
               key={kind}
               session={session}
               kind={kind}
-              fileUrl={fileUrl}
+              file={file}
               index={index}/>
           )
         })}
@@ -179,52 +179,88 @@ export function SoftfileClient({ session }: Props) {
   )
 }
 
-// ─── Helper: get file by kind ─────────────────────────────────────────────────
 
-function getFileUrl(session: SessionData, kind: FileKind): string | null {
-  const fileMap = {
-    photo: session.photo,
-    live_photo: session.livePhoto,
-    gif: session.gif,
-  }
-  const file = fileMap[kind]
-  if (!file) return null
-  return getPublicUrl(file.storage_bucket, file.storage_path)
-}
 
 // ─── Media Item ─────────────────────────────────────────────────────────────
 
 function MediaItem({
   session,
   kind,
-  fileUrl,
+  file,
   index,
 }: {
   session: SessionData
   kind: FileKind
-  fileUrl: string
+  file: SessionFile
   index: number
 }) {
   const [downloading, setDownloading] = useState(false)
-
+  const [isInView, setIsInView] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  
+  const previewUrl = kind === 'photo' 
+    ? getPublicUrl(file.storage_bucket, file.storage_path, { width: 800, quality: 80 })
+    : getPublicUrl(file.storage_bucket, file.storage_path)
+  const downloadUrl = getPublicUrl(file.storage_bucket, file.storage_path)
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '100px' }
+    )
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [])
+  
   const handleDownload = async () => {
-    if (!fileUrl || downloading) return
+    if (!downloadUrl || downloading) return
     setDownloading(true)
     try {
-      const response = await fetch(fileUrl)
+      if (kind === 'photo' && previewUrl === downloadUrl) {
+        const img = document.querySelector(`img[src="${previewUrl}"]`) as HTMLImageElement
+        if (img && img.complete) {
+          const canvas = document.createElement('canvas')
+          canvas.width = img.naturalWidth
+          canvas.height = img.naturalHeight
+          const ctx = canvas.getContext('2d')
+          if (ctx) {
+            ctx.drawImage(img, 0, 0)
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `photogenics-${session.sessionId}.jpg`
+                document.body.appendChild(a)
+                a.click()
+                document.body.removeChild(a)
+                URL.revokeObjectURL(url)
+              }
+            }, 'image/jpeg', 0.95)
+          }
+          setDownloading(false)
+          return
+        }
+      }
+      
+      const response = await fetch(downloadUrl)
       const blob = await response.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
       const ext = (kind === 'gif' || kind === 'live_photo') ? 'mp4' : 'jpg'
-      // const ext = kind === 'gif' ? 'gif' : kind === 'live_photo' ? 'mov' : 'jpg'
       a.download = `photogenics-${session.sessionId}.${ext}`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
     } catch {
-      window.open(fileUrl, '_blank')
+      window.open(downloadUrl, '_blank')
     } finally {
       setDownloading(false)
     }
@@ -232,6 +268,7 @@ function MediaItem({
 
   return (    
     <div
+      ref={ref}
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -251,7 +288,7 @@ function MediaItem({
         </h2>
       </div>
 
-      <MediaPreview url={fileUrl} kind={kind} />
+      {isInView && <MediaPreview url={previewUrl} kind={kind} />}
 
       <button
         onClick={handleDownload}
@@ -305,10 +342,20 @@ function MediaPreview({ url, kind }: { url: string; kind: FileKind }) {
   }
 
   if (kind === 'live_photo' || kind === 'gif') {
-    return <video src={url} autoPlay loop muted playsInline style={sharedStyle} />
+    return (
+      <video 
+        src={url} 
+        autoPlay 
+        loop 
+        muted 
+        playsInline 
+        preload="metadata"
+        style={sharedStyle} 
+      />
+    )
   }
 
-  return <img src={url} alt={`Hasil ${kind} kamu`} style={sharedStyle} />
+  return <img src={url} alt={`Hasil ${kind} kamu`} style={sharedStyle} loading="lazy" />
 }
 
 function ProcessingItem({ kind, index }: { kind: FileKind; index: number }) {
