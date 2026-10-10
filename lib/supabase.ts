@@ -28,7 +28,7 @@ export async function getSessionData(sessionId: string): Promise<SessionData | n
     (f.kind === 'raw' || f.kind === 'other') && 
     f.storage_path.includes('/processed/shot-') && 
     f.storage_path.endsWith('.jpg')
-  )
+  ).sort((a, b) => shotNumber(a.storage_path) - shotNumber(b.storage_path))
 
   return {
     sessionId,
@@ -38,6 +38,11 @@ export async function getSessionData(sessionId: string): Promise<SessionData | n
     gif: gif ?? null,
     shots,
   }
+}
+
+function shotNumber(path: string): number {
+  const match = path.match(/shot-(\d+)/)
+  return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER
 }
 
 export function getPublicUrl(bucket: string, path: string, options?: { width?: number; quality?: number }): string {
