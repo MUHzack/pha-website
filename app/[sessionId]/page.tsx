@@ -38,5 +38,8 @@ export default async function SessionPage({ params }: Props) {
     return <ProcessingSession />
   }
 
-  return <SoftfileClient session={session} />
+  // Toggle foto satuan lewat env: SHOW_SHOT_PHOTOS=true untuk aktif
+  const showShots = process.env.SHOW_SHOT_PHOTOS === 'true'
+
+  return <SoftfileClient session={showShots ? session : { ...session, shots: [] }} />
 }
