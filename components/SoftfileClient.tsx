@@ -100,9 +100,14 @@ export function SoftfileClient({ session }: Props) {
           )
         })}
 
-        {session.shots.length > 0 && (
-          <ShotsSection session={session} index={FILE_KINDS.length} />
-        )}
+        {session.shots.map((shot, idx) => (
+          <ShotItem
+            key={shot.id}
+            session={session}
+            shot={shot}
+            shotIndex={idx + 1}
+            index={FILE_KINDS.length + idx}/>
+        ))}
       </div>
 
       <div
@@ -362,58 +367,24 @@ function MediaPreview({ url, kind }: { url: string; kind: FileKind }) {
   return <img src={url} alt={`Hasil ${kind} kamu`} style={sharedStyle} loading="lazy" />
 }
 
-// ─── Shots (Foto Satuan) ──────────────────────────────────────────────────────
-
-function ShotsSection({ session, index }: { session: SessionData; index: number }) {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem',
-        animation: `fadeUp 0.6s ease ${0.1 + index * 0.1}s both`,
-      }}>
-      <div style={{ textAlign: 'center' }}>
-        <h2
-          style={{
-            fontSize: '1.2rem',
-            fontWeight: 700,
-            color: '#050505',
-            margin: 0,
-            letterSpacing: '0.02em',
-          }}>
-          Foto Satuan
-        </h2>
-      </div>
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-          gap: '1rem',
-        }}>
-        {session.shots.map((shot, idx) => (
-          <ShotItem key={shot.id} session={session} shot={shot} shotIndex={idx + 1} />
-        ))}
-      </div>
-    </div>
-  )
-}
+// ─── Shot Item (Foto Satuan) ──────────────────────────────────────────────────
 
 function ShotItem({
   session,
   shot,
   shotIndex,
+  index,
 }: {
   session: SessionData
   shot: SessionFile
   shotIndex: number
+  index: number
 }) {
   const [downloading, setDownloading] = useState(false)
   const [isInView, setIsInView] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
-  const thumbUrl = getPublicUrl(shot.storage_bucket, shot.storage_path, { width: 400, quality: 75 })
+  const previewUrl = getPublicUrl(shot.storage_bucket, shot.storage_path, { width: 800, quality: 80 })
   const downloadUrl = getPublicUrl(shot.storage_bucket, shot.storage_path)
 
   useEffect(() => {
@@ -452,44 +423,63 @@ function ShotItem({
   }
 
   return (
-    <div ref={ref} style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-      <div
-        style={{
-          width: '100%',
-          aspectRatio: '3 / 4',
-          borderRadius: '4px',
-          overflow: 'hidden',
-          background: 'rgba(0,0,0,0.05)',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.12)',
-        }}>
-        {isInView && (
-          <img
-            src={thumbUrl}
-            alt={`Foto satuan ${shotIndex}`}
-            loading="lazy"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          />
-        )}
+    <div
+      ref={ref}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+        animation: `fadeUp 0.6s ease ${0.1 + index * 0.1}s both`,
+      }}>
+      <div style={{ textAlign: 'center' }}>
+        <h2
+          style={{
+            fontSize: '1.2rem',
+            fontWeight: 700,
+            color: '#050505',
+            margin: 0,
+            letterSpacing: '0.02em',
+          }}>
+          Foto Satuan {shotIndex}
+        </h2>
       </div>
+
+      {isInView && <MediaPreview url={previewUrl} kind="photo" />}
 
       <button
         onClick={handleDownload}
         disabled={downloading}
         style={{
           width: '100%',
-          padding: '0.7rem 1rem',
+          padding: '1.05rem 2rem',
           background: !downloading ? '#0a0a0a' : '#ccc',
           color: '#ffffff',
           border: 'none',
           borderRadius: '999px',
-          fontSize: '0.82rem',
+          fontSize: '0.95rem',
           fontWeight: 600,
           letterSpacing: '0.04em',
           cursor: !downloading ? 'pointer' : 'not-allowed',
           fontFamily: 'inherit',
-          transition: 'background 0.15s ease',
+          transition: 'background 0.15s ease, transform 0.15s ease',
+        }}
+        onMouseEnter={(e) => {
+          if (!downloading) {
+            e.currentTarget.style.background = '#222'
+            e.currentTarget.style.transform = 'translateY(-1px)'
+          }
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = !downloading ? '#0a0a0a' : '#ccc'
+          e.currentTarget.style.transform = ''
+        }}
+        onMouseDown={(e) => {
+          if (!downloading) e.currentTarget.style.transform = 'scale(0.98)'
+        }}
+        onMouseUp={(e) => {
+          if (!downloading) e.currentTarget.style.transform = 'translateY(-1px)'
         }}>
-        {downloading ? 'Mengunduh...' : `Download ${shotIndex}`}
+        {downloading ? 'Mengunduh...' : `Download Foto Satuan ${shotIndex}`}
       </button>
     </div>
   )
