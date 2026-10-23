@@ -245,9 +245,13 @@ function generateVoucherCode(): string {
 ```env
 # Vercel server-side secret. Never prefix this with NEXT_PUBLIC_.
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Enable the frame selector for single photos only when the feature is ready.
+# Defaults to disabled when unset or set to false.
+ENABLE_SINGLE_PHOTO_FRAMES=false
 ```
 
-Browser website memanggil Route Handler same-origin `/api/form/{sessionId}`. Status dibaca dari Supabase dan submit diproses server-side dengan service-role key. Browser tidak menerima key tersebut dan tidak memerlukan koneksi ke server kiosk.
+Browser website memanggil Route Handler same-origin `/api/form/{sessionId}`. Status dibaca dari Supabase dan submit diproses server-side dengan service-role key. Browser tidak menerima key tersebut dan tidak memerlukan koneksi ke server kiosk. Frame selector foto satuan dinonaktifkan secara default; set `ENABLE_SINGLE_PHOTO_FRAMES=true` di environment Vercel untuk mengaktifkannya, lalu redeploy.
 
 ### 2. API Client
 

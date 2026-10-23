@@ -54,6 +54,12 @@ export default async function SessionPage({ params }: Props) {
   }
 
   const showShots = process.env.SHOW_SHOT_PHOTOS === 'true'
+  const enableSinglePhotoFrames = process.env.ENABLE_SINGLE_PHOTO_FRAMES === 'true'
 
-  return <SoftfileClient session={showShots ? session : { ...session, shots: [] }} />
+  return (
+    <SoftfileClient
+      session={showShots ? session : { ...session, shots: [] }}
+      enableSinglePhotoFrames={enableSinglePhotoFrames}
+    />
+  )
 }

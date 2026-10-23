@@ -16,9 +16,10 @@ const FILE_KINDS: FileKind[] = ['photo', 'live_photo', 'gif']
 
 interface Props {
   session: SessionData
+  enableSinglePhotoFrames?: boolean
 }
 
-export function SoftfileClient({ session }: Props) {
+export function SoftfileClient({ session, enableSinglePhotoFrames = false }: Props) {
   const router = useRouter()
 
   useEffect(() => {
@@ -106,6 +107,7 @@ export function SoftfileClient({ session }: Props) {
             session={session}
             shot={shot}
             shotIndex={idx + 1}
+            enableFrame={enableSinglePhotoFrames}
             index={FILE_KINDS.length + idx}/>
         ))}
       </div>
@@ -373,11 +375,13 @@ function ShotItem({
   session,
   shot,
   shotIndex,
+  enableFrame,
   index,
 }: {
   session: SessionData
   shot: SessionFile
   shotIndex: number
+  enableFrame: boolean
   index: number
 }) {
   const [downloading, setDownloading] = useState(false)
@@ -484,39 +488,41 @@ function ShotItem({
           {downloading ? 'Mengunduh...' : 'Download'}
         </button>
 
-        <button
-          onClick={() => setShowFrameSelector(true)}
-          style={{
-            flex: 1,
-            padding: '1.05rem 2rem',
-            background: 'transparent',
-            color: '#0a0a0a',
-            border: '2px solid #0a0a0a',
-            borderRadius: '999px',
-            fontSize: '0.95rem',
-            fontWeight: 600,
-            letterSpacing: '0.04em',
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            transition: 'all 0.15s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#0a0a0a'
-            e.currentTarget.style.color = '#ffffff'
-            e.currentTarget.style.transform = 'translateY(-1px)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent'
-            e.currentTarget.style.color = '#0a0a0a'
-            e.currentTarget.style.transform = ''
-          }}
-          onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
-          onMouseUp={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}>
-          Pilih Frame
-        </button>
+        {enableFrame && (
+          <button
+            onClick={() => setShowFrameSelector(true)}
+            style={{
+              flex: 1,
+              padding: '1.05rem 2rem',
+              background: 'transparent',
+              color: '#0a0a0a',
+              border: '2px solid #0a0a0a',
+              borderRadius: '999px',
+              fontSize: '0.95rem',
+              fontWeight: 600,
+              letterSpacing: '0.04em',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              transition: 'all 0.15s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#0a0a0a'
+              e.currentTarget.style.color = '#ffffff'
+              e.currentTarget.style.transform = 'translateY(-1px)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.color = '#0a0a0a'
+              e.currentTarget.style.transform = ''
+            }}
+            onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
+            onMouseUp={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}>
+            Pilih Frame
+          </button>
+        )}
       </div>
 
-      {showFrameSelector && (
+      {enableFrame && showFrameSelector && (
         <FrameSelector
           session={session}
           shot={shot}
