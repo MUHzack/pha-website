@@ -1,7 +1,7 @@
-import { supabase } from '@/lib/supabase'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 
 export async function getFormStatus(sessionId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from('photobox_download_forms')
     .select('created_at')
     .eq('session_id', sessionId)

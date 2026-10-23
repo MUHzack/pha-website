@@ -125,9 +125,9 @@ atau jika sudah submit:
 
 ### 2. Submit Form
 
-**Endpoint:** `POST /api/form/{sessionId}/submit`
+**Website endpoint:** `POST /api/form/{sessionId}`
 
-If the API returns 404, the website falls back to `POST /form/{sessionId}/submit` for older backend versions.
+Website validates the session and calls the `submit_photobox_customer_review` Supabase function. The database transaction creates the voucher and saves the review together, enforcing one submission per session. The kiosk's legacy endpoint remains `POST /form/{sessionId}/submit`.
 
 **Request Body:**
 ```json
@@ -243,13 +243,11 @@ function generateVoucherCode(): string {
 ### 1. Environment Variables
 
 ```env
-# Vercel server-side URL; it must be a public host routed to the PHA download server
-PHA_API_URL=https://api.phaqr.my.id
-# Local/LAN example for development only (download server default port: 4545)
-PHA_API_URL=http://192.168.1.100:4545
+# Vercel server-side secret. Never prefix this with NEXT_PUBLIC_.
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-Browser website memanggil Route Handler same-origin `/api/form/{sessionId}`. Status dibaca langsung dari Supabase; submit diteruskan ke PHA download server yang dapat dijangkau oleh Vercel. Browser tidak membutuhkan konfigurasi CORS pada host backend.
+Browser website memanggil Route Handler same-origin `/api/form/{sessionId}`. Status dibaca dari Supabase dan submit diproses server-side dengan service-role key. Browser tidak menerima key tersebut dan tidak memerlukan koneksi ke server kiosk.
 
 ### 2. API Client
 
@@ -535,15 +533,14 @@ ALTER TABLE photobox_vouchers ADD COLUMN IF NOT EXISTS source text;
 ALTER TABLE photobox_payment_settings 
 ADD COLUMN IF NOT EXISTS form_voucher_discount_percent bigint DEFAULT 10;
 
--- 5. Grant permissions
-GRANT ALL ON TABLE photobox_download_forms TO anon;
-GRANT ALL ON TABLE photobox_download_forms TO authenticated;
-GRANT ALL ON TABLE photobox_download_forms TO service_role;
-
--- 6. Enable RLS
+-- 5. Keep customer review fields private to server-side service-role access
 ALTER TABLE photobox_download_forms ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow anon all" ON photobox_download_forms USING (true);
+DROP POLICY IF EXISTS "Allow anon all" ON photobox_download_forms;
+REVOKE ALL ON TABLE photobox_download_forms FROM anon, authenticated;
+GRANT ALL ON TABLE photobox_download_forms TO service_role;
 ```
+
+Run `supabase/migrations/202610230002_submit_photobox_customer_review.sql` to install the server-only atomic submit function and permissions.
 
 ---
 
@@ -562,7 +559,7 @@ CREATE POLICY "Allow anon all" ON photobox_download_forms USING (true);
 
 ## Next Steps
 
-1. **Run SQL migration** di Supabase untuk create table dan add columns
+1. **Run SQL migrations** di Supabase, termasuk `supabase/migrations/202610230002_submit_photobox_customer_review.sql`
 2. **Setup PHA-WEBSITE** dengan halaman form dan download
 3. **Test end-to-end** flow dari scan QR sampai redeem voucher
 4. **Deploy** kedua aplikasi
