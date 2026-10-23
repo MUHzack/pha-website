@@ -243,13 +243,13 @@ function generateVoucherCode(): string {
 ### 1. Environment Variables
 
 ```env
-# Vercel / .env.local (server-side URL; defaults to https://api.phaqr.my.id)
+# Vercel server-side URL; it must be a public host routed to the PHA download server
 PHA_API_URL=https://api.phaqr.my.id
-# atau jika menggunakan local server dari kiosk:
-PHA_API_URL=http://192.168.1.100:3000
+# Local/LAN example for development only (download server default port: 4545)
+PHA_API_URL=http://192.168.1.100:4545
 ```
 
-Browser website memanggil Route Handler same-origin `/api/form/{sessionId}`. Route Handler meneruskan status dan submit ke PHA API sehingga browser tidak membutuhkan konfigurasi CORS pada host API.
+Browser website memanggil Route Handler same-origin `/api/form/{sessionId}`. Status dibaca langsung dari Supabase; submit diteruskan ke PHA download server yang dapat dijangkau oleh Vercel. Browser tidak membutuhkan konfigurasi CORS pada host backend.
 
 ### 2. API Client
 

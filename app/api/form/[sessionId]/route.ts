@@ -41,7 +41,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     const { response: upstream, endpoints } = await fetchPHAForm(sessionId, payload)
     if (upstream.status === 404) {
       return NextResponse.json(
-        { error: `PHA API tidak menemukan endpoint submit form. Path yang dicoba: ${endpoints.map((url) => new URL(url).pathname).join(', ')}` },
+        { error: `Server pada PHA_API_URL tidak menyediakan endpoint submit form. Path yang dicoba: ${endpoints.map((url) => new URL(url).pathname).join(', ')}. PHA_API_URL harus mengarah ke server publik yang meneruskan request ke PHA download server.` },
         { status: 404 },
       )
     }
