@@ -1,13 +1,14 @@
 import { getSessionData } from '@/lib/supabase'
+import { checkFormStatus } from '@/lib/api'
 import { SoftfileClient } from '@/components/SoftfileClient'
 import { InvalidSession } from '@/components/InvalidSession'
 import { ProcessingSession } from '@/components/ProcessingSession'
+import { redirect } from 'next/navigation'
 
 interface Props {
   params: Promise<{ sessionId: string }>
 }
 
-// ✅ FIX generateMetadata
 export async function generateMetadata({ params }: Props) {
   const { sessionId } = await params
 
@@ -16,7 +17,6 @@ export async function generateMetadata({ params }: Props) {
   }
 }
 
-// ✅ FIX page
 export default async function SessionPage({ params }: Props) {
   const { sessionId } = await params
 
@@ -38,7 +38,15 @@ export default async function SessionPage({ params }: Props) {
     return <ProcessingSession />
   }
 
-  // Toggle foto satuan lewat env: SHOW_SHOT_PHOTOS=true untuk aktif
+  try {
+    const formStatus = await checkFormStatus(sessionId)
+    if (!formStatus.submitted) {
+      redirect(`/${sessionId}/form`)
+    }
+  } catch (error) {
+    console.error('Failed to check form status:', error)
+  }
+
   const showShots = process.env.SHOW_SHOT_PHOTOS === 'true'
 
   return <SoftfileClient session={showShots ? session : { ...session, shots: [] }} />

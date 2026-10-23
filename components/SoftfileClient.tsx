@@ -382,6 +382,7 @@ function ShotItem({
 }) {
   const [downloading, setDownloading] = useState(false)
   const [isInView, setIsInView] = useState(false)
+  const [showFrameSelector, setShowFrameSelector] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
   const previewUrl = getPublicUrl(shot.storage_bucket, shot.storage_path, { width: 800, quality: 80 })
@@ -446,43 +447,269 @@ function ShotItem({
 
       {isInView && <MediaPreview url={previewUrl} kind="photo" />}
 
-      <button
-        onClick={handleDownload}
-        disabled={downloading}
-        style={{
-          width: '100%',
-          padding: '1.05rem 2rem',
-          background: !downloading ? '#0a0a0a' : '#ccc',
-          color: '#ffffff',
-          border: 'none',
-          borderRadius: '999px',
-          fontSize: '0.95rem',
-          fontWeight: 600,
-          letterSpacing: '0.04em',
-          cursor: !downloading ? 'pointer' : 'not-allowed',
-          fontFamily: 'inherit',
-          transition: 'background 0.15s ease, transform 0.15s ease',
-        }}
-        onMouseEnter={(e) => {
-          if (!downloading) {
-            e.currentTarget.style.background = '#222'
+      <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <button
+          onClick={handleDownload}
+          disabled={downloading}
+          style={{
+            flex: 1,
+            padding: '1.05rem 2rem',
+            background: !downloading ? '#0a0a0a' : '#ccc',
+            color: '#ffffff',
+            border: 'none',
+            borderRadius: '999px',
+            fontSize: '0.95rem',
+            fontWeight: 600,
+            letterSpacing: '0.04em',
+            cursor: !downloading ? 'pointer' : 'not-allowed',
+            fontFamily: 'inherit',
+            transition: 'background 0.15s ease, transform 0.15s ease',
+          }}
+          onMouseEnter={(e) => {
+            if (!downloading) {
+              e.currentTarget.style.background = '#222'
+              e.currentTarget.style.transform = 'translateY(-1px)'
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = !downloading ? '#0a0a0a' : '#ccc'
+            e.currentTarget.style.transform = ''
+          }}
+          onMouseDown={(e) => {
+            if (!downloading) e.currentTarget.style.transform = 'scale(0.98)'
+          }}
+          onMouseUp={(e) => {
+            if (!downloading) e.currentTarget.style.transform = 'translateY(-1px)'
+          }}>
+          {downloading ? 'Mengunduh...' : 'Download'}
+        </button>
+
+        <button
+          onClick={() => setShowFrameSelector(true)}
+          style={{
+            flex: 1,
+            padding: '1.05rem 2rem',
+            background: 'transparent',
+            color: '#0a0a0a',
+            border: '2px solid #0a0a0a',
+            borderRadius: '999px',
+            fontSize: '0.95rem',
+            fontWeight: 600,
+            letterSpacing: '0.04em',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            transition: 'all 0.15s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#0a0a0a'
+            e.currentTarget.style.color = '#ffffff'
             e.currentTarget.style.transform = 'translateY(-1px)'
-          }
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = !downloading ? '#0a0a0a' : '#ccc'
-          e.currentTarget.style.transform = ''
-        }}
-        onMouseDown={(e) => {
-          if (!downloading) e.currentTarget.style.transform = 'scale(0.98)'
-        }}
-        onMouseUp={(e) => {
-          if (!downloading) e.currentTarget.style.transform = 'translateY(-1px)'
-        }}>
-        {downloading ? 'Mengunduh...' : `Download Foto Satuan ${shotIndex}`}
-      </button>
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.color = '#0a0a0a'
+            e.currentTarget.style.transform = ''
+          }}
+          onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
+          onMouseUp={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}>
+          Pilih Frame
+        </button>
+      </div>
+
+      {showFrameSelector && (
+        <FrameSelector
+          session={session}
+          shot={shot}
+          shotIndex={shotIndex}
+          onClose={() => setShowFrameSelector(false)}
+        />
+      )}
     </div>
   )
+}
+
+function FrameSelector({
+  session,
+  shot,
+  shotIndex,
+  onClose,
+}: {
+  session: SessionData
+  shot: SessionFile
+  shotIndex: number
+  onClose: () => void
+}) {
+  const [frames, setFrames] = useState<Array<{ id: string; name: string; previewUrl: string; overlayUrl: string }>>([])
+  const [selectedFrame, setSelectedFrame] = useState<string | null>(null)
+  const [downloading, setDownloading] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const PHA_API_BASE = process.env.NEXT_PUBLIC_PHA_API_URL || ''
+    fetch(`${PHA_API_BASE}/api/templates?kind=frame`)
+      .then(res => res.json())
+      .then(data => {
+        setFrames(data.templates || [])
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const handleDownloadWithFrame = async () => {
+    if (!selectedFrame || downloading) return
+    setDownloading(true)
+
+    try {
+      const frame = frames.find(f => f.id === selectedFrame)
+      if (!frame) return
+
+      const PHA_API_BASE = process.env.NEXT_PUBLIC_PHA_API_URL || ''
+      const response = await fetch(`${PHA_API_BASE}/api/apply-frame`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageUrl: getPublicUrl(shot.storage_bucket, shot.storage_path),
+          frameUrl: frame.overlayUrl,
+        }),
+      })
+
+      if (!response.ok) throw new Error('Failed to apply frame')
+
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `photogenics-${session.sessionId}-shot-${shotIndex}-framed.jpg`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch {
+      alert('Gagal menerapkan frame. Silakan coba lagi.')
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.8)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem',
+      zIndex: 1000,
+      animation: 'fadeIn 0.2s ease',
+    }}>
+      <div style={{
+        background: '#fff',
+        borderRadius: '16px',
+        padding: '1.5rem',
+        maxWidth: '500px',
+        width: '100%',
+        maxHeight: '90vh',
+        overflow: 'auto',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>Pilih Frame</h3>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              fontSize: '1.5rem',
+              cursor: 'pointer',
+              padding: '0.25rem',
+              lineHeight: 1,
+            }}>
+            ×
+          </button>
+        </div>
+
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '2rem' }}>
+            <div style={spinnerStyle} />
+            <p style={{ color: '#666', marginTop: '1rem' }}>Memuat frame...</p>
+          </div>
+        ) : frames.length === 0 ? (
+          <p style={{ textAlign: 'center', color: '#666' }}>Tidak ada frame tersedia</p>
+        ) : (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '1rem',
+            marginBottom: '1.5rem',
+          }}>
+            {frames.map(frame => (
+              <button
+                key={frame.id}
+                onClick={() => setSelectedFrame(frame.id)}
+                style={{
+                  border: selectedFrame === frame.id ? '3px solid #0a0a0a' : '2px solid #e5e5e5',
+                  borderRadius: '12px',
+                  padding: '0.5rem',
+                  background: selectedFrame === frame.id ? '#f5f5f5' : '#fff',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}>
+                <img
+                  src={frame.previewUrl}
+                  alt={frame.name}
+                  style={{ width: '100%', borderRadius: '8px', aspectRatio: '1', objectFit: 'cover' }}
+                />
+                <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem', fontWeight: 500 }}>{frame.name}</p>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button
+            onClick={onClose}
+            style={{
+              flex: 1,
+              padding: '0.85rem',
+              background: '#f5f5f5',
+              border: 'none',
+              borderRadius: '100px',
+              fontSize: '0.95rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}>
+            Batal
+          </button>
+          <button
+            onClick={handleDownloadWithFrame}
+            disabled={!selectedFrame || downloading}
+            style={{
+              flex: 1,
+              padding: '0.85rem',
+              background: selectedFrame && !downloading ? '#0a0a0a' : '#ccc',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '100px',
+              fontSize: '0.95rem',
+              fontWeight: 600,
+              cursor: selectedFrame && !downloading ? 'pointer' : 'not-allowed',
+            }}>
+            {downloading ? 'Memproses...' : 'Download dengan Frame'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const spinnerStyle: React.CSSProperties = {
+  width: '32px',
+  height: '32px',
+  borderRadius: '50%',
+  border: '3px solid rgba(0,0,0,0.1)',
+  borderTopColor: '#000',
+  animation: 'spin 1s linear infinite',
+  margin: '0 auto',
 }
 
 function ProcessingItem({ kind, index }: { kind: FileKind; index: number }) {
