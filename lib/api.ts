@@ -8,6 +8,7 @@ export interface VoucherData {
   discountPercent: number
   discountAmount: number
   message: string
+  expiresAt: string
 }
 
 export interface SubmitFormResponse {
@@ -18,11 +19,12 @@ export interface SubmitFormResponse {
 
 export interface FormData {
   rating: number
-  name?: string
-  gender?: string
-  birthDate?: string
-  email?: string
-  phone?: string
+  name: string
+  gender: 'female' | 'male'
+  birthDate: string
+  phone: string
+  visitedBranch: string
+  discoverySource: string
   feedback: string
 }
 

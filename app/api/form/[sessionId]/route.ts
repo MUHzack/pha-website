@@ -60,37 +60,53 @@ export async function POST(request: Request, { params }: RouteContext) {
     const genderValue = typeof payload.gender === 'string' ? payload.gender : ''
     const birthDateValue = typeof payload.birthDate === 'string' ? payload.birthDate : ''
     const nameValue = typeof payload.name === 'string' ? payload.name.trim() : ''
-    const emailValue = typeof payload.email === 'string' ? payload.email.trim() : ''
     const phoneValue = typeof payload.phone === 'string' ? payload.phone.trim() : ''
+    const visitedBranchValue = typeof payload.visitedBranch === 'string' ? payload.visitedBranch.trim() : ''
+    const discoverySourceValue = typeof payload.discoverySource === 'string' ? payload.discoverySource : ''
     const gender = genderValue || null
     const birthDate = birthDateValue || null
     const name = nameValue || null
-    const email = emailValue || null
     const phone = phoneValue || null
 
     if (typeof rating !== 'number' || !Number.isInteger(rating) || rating < 1 || rating > 5) {
       return NextResponse.json({ success: false, error: 'Pilih rating dari 1 sampai 5.' }, { status: 400 })
     }
-    if (!feedback || feedback.length > 5000) {
-      return NextResponse.json({ success: false, error: 'Pesan wajib diisi (maksimal 5000 karakter).' }, { status: 400 })
+    if (feedback.length < 10 || feedback.length > 5000) {
+      return NextResponse.json({ success: false, error: 'Pesan harus berisi 10 sampai 5000 karakter.' }, { status: 400 })
     }
-    if (gender && !['female', 'male', 'prefer_not_to_say'].includes(gender)) {
+    if (!['female', 'male'].includes(genderValue)) {
       return NextResponse.json({ success: false, error: 'Pilihan gender tidak valid.' }, { status: 400 })
     }
-    if (birthDate && !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
+    if (!nameValue) {
+      return NextResponse.json({ success: false, error: 'Nama wajib diisi.' }, { status: 400 })
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDateValue)) {
       return NextResponse.json({ success: false, error: 'Format tanggal lahir tidak valid.' }, { status: 400 })
     }
-    if (birthDate) {
+    {
       const parsedDate = new Date(`${birthDate}T00:00:00.000Z`)
-      if (Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== birthDate) {
+      if (Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== birthDateValue) {
         return NextResponse.json({ success: false, error: 'Tanggal lahir tidak valid.' }, { status: 400 })
       }
+      const minimumBirthDate = new Date()
+      minimumBirthDate.setUTCHours(0, 0, 0, 0)
+      minimumBirthDate.setUTCFullYear(minimumBirthDate.getUTCFullYear() - 10)
+      if (birthDateValue > minimumBirthDate.toISOString().slice(0, 10)) {
+        return NextResponse.json({ success: false, error: 'Usia minimal untuk mengisi form adalah 10 tahun.' }, { status: 400 })
+      }
     }
-    if (nameValue.length > 200 || emailValue.length > 254 || phoneValue.length > 40) {
+    if (nameValue.length > 200 || phoneValue.length > 40 || visitedBranchValue.length > 200) {
       return NextResponse.json({ success: false, error: 'Ada data yang terlalu panjang.' }, { status: 400 })
     }
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json({ success: false, error: 'Format email tidak valid.' }, { status: 400 })
+    const normalizedPhone = phoneValue.replace(/[\s().-]/g, '')
+    if (!/^(?:\+?62|0)\d{8,13}$/.test(normalizedPhone)) {
+      return NextResponse.json({ success: false, error: 'Masukkan nomor HP aktif yang valid.' }, { status: 400 })
+    }
+    if (!visitedBranchValue) {
+      return NextResponse.json({ success: false, error: 'Cabang yang dikunjungi wajib diisi.' }, { status: 400 })
+    }
+    if (!['instagram', 'tiktok', 'friends_family', 'google', 'other'].includes(discoverySourceValue)) {
+      return NextResponse.json({ success: false, error: 'Pilih sumber informasi Photogenics.' }, { status: 400 })
     }
 
     const supabase = getSupabaseAdmin()
@@ -133,8 +149,10 @@ export async function POST(request: Request, { params }: RouteContext) {
         p_name: name,
         p_gender: gender,
         p_birth_date: birthDate,
-        p_email: email,
+        p_email: null,
         p_phone: phone,
+        p_visited_branch: visitedBranchValue,
+        p_discovery_source: discoverySourceValue,
         p_rating: rating,
         p_feedback: feedback,
         p_voucher_code: code,
@@ -151,12 +169,16 @@ export async function POST(request: Request, { params }: RouteContext) {
       }
 
       if (isObject(data) && data.success === true) {
+        const expiresAt = typeof data.expiresAt === 'string'
+          ? data.expiresAt
+          : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
         return NextResponse.json({
           success: true,
           voucher: {
             code,
             discountPercent,
             discountAmount,
+            expiresAt,
             message: 'Voucher berlaku untuk 1x transaksi berikutnya di Photogenics',
           },
         })

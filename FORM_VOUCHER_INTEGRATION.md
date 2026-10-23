@@ -129,6 +129,8 @@ atau jika sudah submit:
 
 Website validates the session and calls the `submit_photobox_customer_review` Supabase function. The database transaction creates the voucher and saves the review together, enforcing one submission per session. The kiosk's legacy endpoint remains `POST /form/{sessionId}/submit`.
 
+The current customer review form requires a star rating, name, gender, birth date (minimum age 10), Indonesian mobile number, visited branch, discovery source, and a message of at least 10 characters. It does not collect email. Review vouchers expire 14 days after issue; the database redemption function rejects expired vouchers.
+
 **Request Body:**
 ```json
 {
@@ -544,7 +546,7 @@ REVOKE ALL ON TABLE photobox_download_forms FROM anon, authenticated;
 GRANT ALL ON TABLE photobox_download_forms TO service_role;
 ```
 
-Run `supabase/migrations/202610230002_submit_photobox_customer_review.sql` to install the server-only atomic submit function and permissions.
+Run `supabase/migrations/202610230002_submit_photobox_customer_review.sql` followed by `supabase/migrations/202610230003_customer_review_requirements_and_voucher_expiry.sql` to install the submit flow, required fields, voucher expiry, and redemption check.
 
 ---
 
@@ -563,7 +565,7 @@ Run `supabase/migrations/202610230002_submit_photobox_customer_review.sql` to in
 
 ## Next Steps
 
-1. **Run SQL migrations** di Supabase, termasuk `supabase/migrations/202610230002_submit_photobox_customer_review.sql`
+1. **Run SQL migrations** di Supabase berurutan sampai `supabase/migrations/202610230003_customer_review_requirements_and_voucher_expiry.sql`
 2. **Setup PHA-WEBSITE** dengan halaman form dan download
 3. **Test end-to-end** flow dari scan QR sampai redeem voucher
 4. **Deploy** kedua aplikasi

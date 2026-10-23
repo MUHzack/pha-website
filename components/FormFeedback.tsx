@@ -1,13 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { checkFormStatus, submitForm, type VoucherData } from '@/lib/api'
+import { checkFormStatus, submitForm, type FormData, type VoucherData } from '@/lib/api'
 import { PhotogenicsLogo } from './PhotogenicsLogo'
 
 interface Props {
   sessionId: string
 }
+
+const DISCOVERY_SOURCES = [
+  ['instagram', 'Instagram'],
+  ['tiktok', 'TikTok'],
+  ['friends_family', 'Teman atau keluarga'],
+  ['google', 'Google / pencarian internet'],
+  ['other', 'Lainnya'],
+] as const
 
 export function FormFeedback({ sessionId }: Props) {
   const router = useRouter()
@@ -16,9 +24,10 @@ export function FormFeedback({ sessionId }: Props) {
     name: '',
     gender: '',
     birthDate: '',
-    email: '',
     phone: '',
-    feedback: ''
+    visitedBranch: '',
+    discoverySource: '',
+    feedback: '',
   })
   const [loading, setLoading] = useState(false)
   const [voucher, setVoucher] = useState<VoucherData | null>(null)
@@ -30,9 +39,7 @@ export function FormFeedback({ sessionId }: Props) {
   useEffect(() => {
     checkFormStatus(sessionId)
       .then((result) => {
-        if (result.submitted) {
-          setAlreadySubmitted(true)
-        }
+        if (result.submitted) setAlreadySubmitted(true)
       })
       .catch((statusError: unknown) => {
         setError(statusError instanceof Error
@@ -40,34 +47,31 @@ export function FormFeedback({ sessionId }: Props) {
           : 'Status form tidak dapat dicek. Periksa koneksi lalu coba lagi.')
         setStatusCheckFailed(true)
       })
-      .finally(() => {
-        setChecking(false)
-      })
+      .finally(() => setChecking(false))
   }, [sessionId])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!formData.rating || !formData.feedback.trim()) return
-    
+  const maxBirthDate = getMaxBirthDate()
+  const phoneIsValid = isValidIndonesianPhone(formData.phone)
+  const canSubmit = Boolean(
+    formData.rating && formData.name.trim() && formData.gender && formData.birthDate && formData.birthDate <= maxBirthDate &&
+    phoneIsValid && formData.visitedBranch.trim() &&
+    formData.discoverySource && formData.feedback.trim().length >= 10
+  )
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!canSubmit || statusCheckFailed) return
+
     setLoading(true)
     setError('')
-
     try {
-      const result = await submitForm(sessionId, {
-        rating: formData.rating,
-        name: formData.name || undefined,
-        gender: formData.gender || undefined,
-        birthDate: formData.birthDate || undefined,
-        email: formData.email || undefined,
-        phone: formData.phone || undefined,
-        feedback: formData.feedback
-      })
-
-      if (result.success && result.voucher) {
-        setVoucher(result.voucher)
-      } else {
-        setError(result.error || 'Terjadi kesalahan')
+      const payload: FormData = {
+        ...formData,
+        gender: formData.gender as FormData['gender'],
       }
+      const result = await submitForm(sessionId, payload)
+      if (result.success && result.voucher) setVoucher(result.voucher)
+      else setError(result.error || 'Terjadi kesalahan')
     } catch {
       setError('Terjadi kesalahan, silakan coba lagi')
     } finally {
@@ -77,15 +81,13 @@ export function FormFeedback({ sessionId }: Props) {
 
   if (checking) {
     return (
-      <div style={containerStyle}>
-        <div style={{ animation: 'fadeIn 0.5s ease both' }}>
-          <PhotogenicsLogo size="1.35rem" color="rgba(0,0,0,0.6)" />
-        </div>
+      <main style={containerStyle}>
+        <PhotogenicsLogo size="1.35rem" color="#51473a" />
         <div style={loadingStyle}>
           <div style={spinnerStyle} />
-          <p style={{ color: '#666', fontSize: '0.95rem' }}>Memuat...</p>
+          <p style={{ color: '#71695f', fontSize: '0.95rem' }}>Memuat...</p>
         </div>
-      </div>
+      </main>
     )
   }
 
@@ -96,305 +98,343 @@ export function FormFeedback({ sessionId }: Props) {
 
   if (voucher) {
     return (
-      <div style={containerStyle}>
-        <div style={{ animation: 'fadeIn 0.5s ease both', marginBottom: '1.5rem' }}>
-          <PhotogenicsLogo size="1.35rem" color="rgba(0,0,0,0.6)" />
-        </div>
-
-        <div style={cardStyle}>
-          <h1 style={titleStyle}>Terima kasih!</h1>
-          <p style={subtitleStyle}>Feedback Anda sangat berarti bagi kami</p>
-
+      <main style={containerStyle}>
+        <div style={logoWrapStyle}><PhotogenicsLogo size="1.35rem" color="#51473a" /></div>
+        <section style={cardStyle}>
+          <p style={eyebrowStyle}>PHOTOGENICS · CUSTOMER REVIEW</p>
+          <h1 style={titleStyle}>Thanks for your review</h1>
+          <p style={subtitleStyle}>Ada voucher spesial untuk kamu!</p>
           <div style={voucherBoxStyle}>
-            <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.5rem' }}>
-              Kode Voucher Anda
-            </p>
+            <p style={voucherLabelStyle}>Kode voucher kamu</p>
             <p style={voucherCodeStyle}>{voucher.code}</p>
             <p style={discountStyle}>Diskon {voucher.discountPercent}%</p>
+            <p style={voucherExpiryStyle}>
+              Berlaku sampai {new Intl.DateTimeFormat('id-ID', {
+                dateStyle: 'long',
+                timeZone: 'Asia/Jakarta',
+              }).format(new Date(voucher.expiresAt))}
+            </p>
             <p style={voucherNoteStyle}>{voucher.message}</p>
           </div>
-
-          <button
-            onClick={() => router.push(`/${sessionId}`)}
-            style={buttonStyle}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#222'
-              e.currentTarget.style.transform = 'translateY(-1px)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#0a0a0a'
-              e.currentTarget.style.transform = ''
-            }}
-          >
+          <button onClick={() => router.push(`/${sessionId}`)} style={buttonStyle}>
             Lanjut Download
           </button>
-        </div>
-      </div>
+        </section>
+      </main>
     )
   }
 
   return (
-    <div style={containerStyle}>
-      <div style={{ animation: 'fadeIn 0.5s ease both', marginBottom: '1.5rem' }}>
-        <PhotogenicsLogo size="1.35rem" color="rgba(0,0,0,0.6)" />
-      </div>
-
+    <main style={containerStyle}>
+      <div style={logoWrapStyle}><PhotogenicsLogo size="1.35rem" color="#51473a" /></div>
       <form onSubmit={handleSubmit} style={cardStyle}>
+        <p style={eyebrowStyle}>PHOTOGENICS · CUSTOMER REVIEW</p>
         <h1 style={titleStyle}>Customer Review</h1>
-        <p style={subtitleStyle}>Ceritakan pengalamanmu bersama Photogenics</p>
+        <p style={subtitleStyle}>Bagikan pengalamanmu dan dapatkan voucher spesial dari Photogenics</p>
 
         <div style={formGroupStyle}>
-          <label htmlFor="customer-rating" style={fieldLabelStyle}>Rating pengalamanmu</label>
-          <div aria-label={formData.rating ? `Rating ${formData.rating} dari 5` : 'Belum memberi rating'} style={starsStyle}>
+          <span id="rating-label" style={fieldLabelStyle}>Rating pengalamanmu</span>
+          <div role="radiogroup" aria-labelledby="rating-label" style={starsStyle}>
             {[1, 2, 3, 4, 5].map((star) => (
-              <span key={star} aria-hidden="true" style={{ ...starStyle, color: star <= formData.rating ? '#f5a623' : '#d5d5d5' }}>
+              <button
+                key={star}
+                type="button"
+                role="radio"
+                aria-checked={formData.rating === star}
+                aria-label={`${star} dari 5 bintang`}
+                onClick={() => setFormData({ ...formData, rating: star })}
+                disabled={statusCheckFailed}
+                style={{
+                  ...starButtonStyle,
+                  color: star <= formData.rating ? '#b78a52' : '#d6d0c7',
+                  transform: formData.rating === star ? 'scale(1.12)' : 'scale(1)',
+                }}
+              >
                 ★
-              </span>
+              </button>
             ))}
-            <span style={ratingValueStyle}>{formData.rating ? `${formData.rating}/5` : 'Pilih rating'}</span>
           </div>
-          <input
-            id="customer-rating"
-            type="range"
-            min="1"
-            max="5"
-            step="1"
-            value={formData.rating || 1}
-            onChange={(e) => setFormData({ ...formData, rating: Number(e.target.value) })}
-            aria-label="Geser untuk memilih rating dari 1 sampai 5"
-            style={ratingSliderStyle}
-            disabled={statusCheckFailed}
-          />
-          <div style={sliderLabelsStyle}><span>Kurang puas</span><span>Sangat puas</span></div>
+          <span style={ratingValueStyle}>{formData.rating ? `${formData.rating} dari 5` : 'Ketuk bintang untuk memberi rating'}</span>
         </div>
 
         <div style={formGroupStyle}>
+          <label htmlFor="customer-name" style={fieldLabelStyle}>Nama</label>
           <input
+            id="customer-name"
             type="text"
-            placeholder="Nama (opsional)"
-            aria-label="Nama"
+            placeholder="Nama lengkap"
+            autoComplete="name"
+            maxLength={200}
+            required
+            disabled={statusCheckFailed}
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={(event) => setFormData({ ...formData, name: event.target.value })}
             style={inputStyle}
           />
         </div>
 
         <div style={formGroupStyle}>
-          <label htmlFor="customer-gender" style={fieldLabelStyle}>Gender (opsional)</label>
+          <label htmlFor="customer-gender" style={fieldLabelStyle}>Gender</label>
           <select
             id="customer-gender"
             value={formData.gender}
-            onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+            onChange={(event) => setFormData({ ...formData, gender: event.target.value })}
             style={inputStyle}
             disabled={statusCheckFailed}
+            required
           >
             <option value="">Pilih gender</option>
             <option value="female">Perempuan</option>
             <option value="male">Laki-laki</option>
-            <option value="prefer_not_to_say">Memilih tidak menjawab</option>
           </select>
         </div>
 
         <div style={formGroupStyle}>
-          <label htmlFor="customer-birth-date" style={fieldLabelStyle}>Tanggal lahir (opsional)</label>
+          <label htmlFor="customer-birth-date" style={fieldLabelStyle}>Tanggal lahir</label>
           <input
             id="customer-birth-date"
             type="date"
-            value={formData.birthDate}
-            onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-            style={inputStyle}
-            disabled={statusCheckFailed}
-          />
-        </div>
-
-        <div style={formGroupStyle}>
-          <input
-            type="tel"
-            placeholder="No. HP (opsional)"
-            aria-label="Nomor HP"
-            value={formData.phone}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-            style={inputStyle}
-          />
-        </div>
-
-        <div style={formGroupStyle}>
-          <input
-            type="email"
-            placeholder="Email (opsional)"
-            aria-label="Email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            style={inputStyle}
-          />
-        </div>
-
-        <div style={formGroupStyle}>
-          <textarea
-            placeholder="Pesan dan ceritakan pengalamanmu (wajib)"
-            aria-label="Pesan review"
-            value={formData.feedback}
-            onChange={(e) => setFormData({ ...formData, feedback: e.target.value })}
+            max={maxBirthDate}
             required
             disabled={statusCheckFailed}
-            rows={4}
-            style={{ ...inputStyle, resize: 'vertical', minHeight: '100px' }}
+            value={formData.birthDate}
+            onChange={(event) => setFormData({ ...formData, birthDate: event.target.value })}
+            style={inputStyle}
+          />
+          <span style={hintStyle}>Usia minimal 10 tahun</span>
+        </div>
+
+        <div style={formGroupStyle}>
+          <label htmlFor="customer-phone" style={fieldLabelStyle}>No. HP</label>
+          <input
+            id="customer-phone"
+            type="tel"
+            placeholder="Contoh: 081234567890"
+            autoComplete="tel"
+            inputMode="tel"
+            maxLength={40}
+            required
+            disabled={statusCheckFailed}
+            value={formData.phone}
+            onChange={(event) => setFormData({ ...formData, phone: event.target.value })}
+            style={inputStyle}
+          />
+          <span style={hintStyle}>Gunakan nomor aktif Indonesia, contoh 081234567890</span>
+        </div>
+
+        <div style={formGroupStyle}>
+          <label htmlFor="visited-branch" style={fieldLabelStyle}>Cabang yang dikunjungi</label>
+          <input
+            id="visited-branch"
+            type="text"
+            placeholder="Nama cabang Photogenics"
+            maxLength={200}
+            required
+            disabled={statusCheckFailed}
+            value={formData.visitedBranch}
+            onChange={(event) => setFormData({ ...formData, visitedBranch: event.target.value })}
+            style={inputStyle}
           />
         </div>
 
-        {error && (
-          <p style={{ color: '#dc2626', fontSize: '0.9rem', margin: '0 0 1rem' }}>
-            {error}
-          </p>
-        )}
+        <div style={formGroupStyle}>
+          <label htmlFor="discovery-source" style={fieldLabelStyle}>Tahu Photogenics dari mana?</label>
+          <select
+            id="discovery-source"
+            value={formData.discoverySource}
+            onChange={(event) => setFormData({ ...formData, discoverySource: event.target.value })}
+            style={inputStyle}
+            required
+            disabled={statusCheckFailed}
+          >
+            <option value="">Pilih sumber informasi</option>
+            {DISCOVERY_SOURCES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+          </select>
+        </div>
+
+        <div style={formGroupStyle}>
+          <label htmlFor="customer-feedback" style={fieldLabelStyle}>Pesan</label>
+          <textarea
+            id="customer-feedback"
+            placeholder="Ceritakan pengalamanmu"
+            value={formData.feedback}
+            onChange={(event) => setFormData({ ...formData, feedback: event.target.value })}
+            required
+            minLength={10}
+            maxLength={5000}
+            disabled={statusCheckFailed}
+            rows={4}
+            style={{ ...inputStyle, resize: 'vertical', minHeight: '112px' }}
+          />
+          <span style={hintStyle}>Minimal 10 karakter</span>
+        </div>
+
+        {error && <p role="alert" style={errorStyle}>{error}</p>}
 
         {statusCheckFailed && (
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            style={{ ...buttonStyle, marginBottom: '1rem', background: '#666' }}
-          >
+          <button type="button" onClick={() => window.location.reload()} style={{ ...buttonStyle, marginBottom: '1rem', background: '#756c61' }}>
             Coba cek lagi
           </button>
         )}
 
         <button
           type="submit"
-          disabled={loading || statusCheckFailed || !formData.rating || !formData.feedback.trim()}
+          disabled={loading || statusCheckFailed || !canSubmit}
           style={{
             ...buttonStyle,
-            background: loading || statusCheckFailed || !formData.rating || !formData.feedback.trim() ? '#ccc' : '#0a0a0a',
-            cursor: loading || statusCheckFailed || !formData.rating || !formData.feedback.trim() ? 'not-allowed' : 'pointer'
-          }}
-          onMouseEnter={(e) => {
-            if (!loading && !statusCheckFailed && formData.rating && formData.feedback.trim()) {
-              e.currentTarget.style.background = '#222'
-              e.currentTarget.style.transform = 'translateY(-1px)'
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!loading && !statusCheckFailed && formData.rating && formData.feedback.trim()) {
-              e.currentTarget.style.background = '#0a0a0a'
-              e.currentTarget.style.transform = ''
-            }
+            opacity: loading || statusCheckFailed || !canSubmit ? 0.55 : 1,
+            cursor: loading || statusCheckFailed || !canSubmit ? 'not-allowed' : 'pointer',
           }}
         >
-          {loading ? 'Menyimpan...' : 'Submit'}
+          {loading ? 'Sending...' : 'Send'}
         </button>
       </form>
-    </div>
+    </main>
   )
 }
 
-const containerStyle: React.CSSProperties = {
+function getMaxBirthDate() {
+  const date = new Date()
+  date.setUTCFullYear(date.getUTCFullYear() - 10)
+  return date.toISOString().slice(0, 10)
+}
+
+function isValidIndonesianPhone(value: string) {
+  const normalized = value.trim().replace(/[\s().-]/g, '')
+  return /^(?:\+?62|0)\d{8,13}$/.test(normalized)
+}
+
+const containerStyle: CSSProperties = {
   minHeight: '100vh',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: '2rem 1rem',
+  padding: 'clamp(1.25rem, 5vw, 3rem) 1rem',
   fontFamily: 'var(--font-outfit, sans-serif)',
-  background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
+  background: 'radial-gradient(ellipse at 12% 8%, rgba(183,138,82,0.16), transparent 34%), linear-gradient(145deg, #f8f6f2 0%, #eee9e1 100%)',
 }
 
-const cardStyle: React.CSSProperties = {
+const logoWrapStyle: CSSProperties = { marginBottom: '1.5rem' }
+
+const cardStyle: CSSProperties = {
   width: '100%',
-  maxWidth: '420px',
-  background: '#fff',
-  borderRadius: '16px',
-  padding: '2rem',
-  boxShadow: '0 8px 40px rgba(0,0,0,0.08)',
+  maxWidth: '520px',
+  background: 'rgba(255,255,255,0.94)',
+  border: '1px solid rgba(102,83,59,0.12)',
+  borderRadius: '24px',
+  padding: 'clamp(1.35rem, 5vw, 2.5rem)',
+  boxShadow: '0 24px 70px rgba(54,42,27,0.11)',
   animation: 'fadeUp 0.6s ease 0.15s both',
 }
 
-const titleStyle: React.CSSProperties = {
-  fontSize: '1.75rem',
+const eyebrowStyle: CSSProperties = {
+  color: '#9a7547',
+  fontSize: '0.72rem',
   fontWeight: 700,
-  color: '#0a0a0a',
-  margin: '0 0 0.5rem',
+  letterSpacing: '0.16em',
   textAlign: 'center',
+  margin: '0 0 0.7rem',
 }
 
-const subtitleStyle: React.CSSProperties = {
-  fontSize: '0.95rem',
-  color: '#666',
+const titleStyle: CSSProperties = {
+  fontSize: 'clamp(1.65rem, 6vw, 2.05rem)',
+  fontWeight: 700,
+  color: '#211d18',
+  margin: '0 0 0.65rem',
+  textAlign: 'center',
+  letterSpacing: '-0.04em',
+}
+
+const subtitleStyle: CSSProperties = {
+  fontSize: '0.96rem',
+  color: '#756c61',
+  lineHeight: 1.6,
   margin: '0 0 2rem',
   textAlign: 'center',
 }
 
-const formGroupStyle: React.CSSProperties = {
-  marginBottom: '1rem',
-}
+const formGroupStyle: CSSProperties = { marginBottom: '1.15rem' }
 
-const fieldLabelStyle: React.CSSProperties = {
+const fieldLabelStyle: CSSProperties = {
   display: 'block',
-  color: '#333',
+  color: '#352f28',
   fontSize: '0.9rem',
-  fontWeight: 600,
+  fontWeight: 650,
   marginBottom: '0.55rem',
 }
 
-const starsStyle: React.CSSProperties = {
+const starsStyle: CSSProperties = {
   display: 'flex',
+  justifyContent: 'center',
   alignItems: 'center',
-  gap: '0.15rem',
-  marginBottom: '0.35rem',
+  gap: '0.35rem',
+  margin: '0.3rem 0 0.6rem',
 }
 
-const starStyle: React.CSSProperties = {
-  fontSize: '1.55rem',
+const starButtonStyle: CSSProperties = {
+  width: 'clamp(48px, 13vw, 64px)',
+  height: 'clamp(48px, 13vw, 64px)',
+  padding: 0,
+  border: 0,
+  background: 'transparent',
+  fontSize: 'clamp(2.7rem, 12vw, 3.6rem)',
   lineHeight: 1,
-}
-
-const ratingValueStyle: React.CSSProperties = {
-  color: '#666',
-  fontSize: '0.85rem',
-  marginLeft: '0.45rem',
-}
-
-const ratingSliderStyle: React.CSSProperties = {
-  width: '100%',
-  accentColor: '#0a0a0a',
   cursor: 'pointer',
+  transition: 'transform 0.15s ease, color 0.15s ease',
 }
 
-const sliderLabelsStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  color: '#777',
-  fontSize: '0.75rem',
+const ratingValueStyle: CSSProperties = {
+  display: 'block',
+  color: '#867b6e',
+  fontSize: '0.8rem',
+  textAlign: 'center',
 }
 
-const inputStyle: React.CSSProperties = {
+const inputStyle: CSSProperties = {
   width: '100%',
-  padding: '0.85rem 1rem',
-  border: '1px solid rgba(0,0,0,0.1)',
-  borderRadius: '10px',
+  padding: '0.9rem 1rem',
+  border: '1px solid #ded8cf',
+  borderRadius: '12px',
   fontSize: '0.95rem',
   fontFamily: 'inherit',
-  color: '#0a0a0a',
+  color: '#211d18',
   backgroundColor: '#fff',
-  WebkitTextFillColor: '#0a0a0a',
+  WebkitTextFillColor: '#211d18',
   transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
   outline: 'none',
   boxSizing: 'border-box',
 }
 
-const buttonStyle: React.CSSProperties = {
+const hintStyle: CSSProperties = {
+  display: 'block',
+  marginTop: '0.4rem',
+  color: '#887f73',
+  fontSize: '0.76rem',
+}
+
+const errorStyle: CSSProperties = {
+  color: '#b42318',
+  fontSize: '0.9rem',
+  lineHeight: 1.5,
+  margin: '0 0 1rem',
+}
+
+const buttonStyle: CSSProperties = {
   width: '100%',
   padding: '1rem',
-  background: '#0a0a0a',
+  background: '#171512',
   color: '#fff',
   border: 'none',
   borderRadius: '100px',
   fontSize: '0.95rem',
-  fontWeight: 600,
+  fontWeight: 650,
   fontFamily: 'inherit',
   cursor: 'pointer',
-  transition: 'background 0.15s ease, transform 0.15s ease',
+  transition: 'background 0.15s ease, transform 0.15s ease, opacity 0.15s ease',
 }
 
-const loadingStyle: React.CSSProperties = {
+const loadingStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
@@ -402,43 +442,35 @@ const loadingStyle: React.CSSProperties = {
   marginTop: '2rem',
 }
 
-const spinnerStyle: React.CSSProperties = {
+const spinnerStyle: CSSProperties = {
   width: '32px',
   height: '32px',
   borderRadius: '50%',
   border: '3px solid rgba(0,0,0,0.1)',
-  borderTopColor: '#000',
+  borderTopColor: '#9a7547',
   animation: 'spin 1s linear infinite',
 }
 
-const voucherBoxStyle: React.CSSProperties = {
-  background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-  borderRadius: '12px',
+const voucherBoxStyle: CSSProperties = {
+  background: 'linear-gradient(145deg, #f5f0e8 0%, #eee5d8 100%)',
+  borderRadius: '18px',
   padding: '1.5rem',
   textAlign: 'center',
   marginBottom: '1.5rem',
-  border: '1px solid rgba(34, 197, 94, 0.2)',
+  border: '1px solid rgba(154,117,71,0.25)',
 }
 
-const voucherCodeStyle: React.CSSProperties = {
-  fontSize: '2rem',
+const voucherLabelStyle: CSSProperties = { fontSize: '0.88rem', color: '#625746', margin: '0 0 0.5rem' }
+
+const voucherCodeStyle: CSSProperties = {
+  fontSize: 'clamp(1.55rem, 7vw, 2rem)',
   fontWeight: 800,
-  color: '#166534',
+  color: '#392d1e',
   letterSpacing: '0.15em',
   margin: '0.5rem 0',
   fontFamily: 'monospace',
 }
 
-const discountStyle: React.CSSProperties = {
-  fontSize: '1.1rem',
-  fontWeight: 600,
-  color: '#15803d',
-  margin: '0.5rem 0',
-}
-
-const voucherNoteStyle: React.CSSProperties = {
-  fontSize: '0.85rem',
-  color: '#166534',
-  margin: '0.5rem 0 0',
-  lineHeight: 1.5,
-}
+const discountStyle: CSSProperties = { fontSize: '1.1rem', fontWeight: 700, color: '#72522d', margin: '0.5rem 0' }
+const voucherExpiryStyle: CSSProperties = { fontSize: '0.85rem', fontWeight: 600, color: '#51473a', margin: '0.75rem 0 0' }
+const voucherNoteStyle: CSSProperties = { fontSize: '0.85rem', color: '#716452', margin: '0.5rem 0 0', lineHeight: 1.5 }
