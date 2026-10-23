@@ -1,5 +1,5 @@
 import { getSessionData } from '@/lib/supabase'
-import { checkFormStatus } from '@/lib/api'
+import { checkPHAFormStatus } from '@/lib/pha-server'
 import { SoftfileClient } from '@/components/SoftfileClient'
 import { InvalidSession } from '@/components/InvalidSession'
 import { ProcessingSession } from '@/components/ProcessingSession'
@@ -40,7 +40,7 @@ export default async function SessionPage({ params }: Props) {
 
   let needsForm = false
   try {
-    const formStatus = await checkFormStatus(sessionId)
+    const formStatus = await checkPHAFormStatus(sessionId)
     needsForm = !formStatus.submitted
   } catch (error) {
     console.error('Failed to check form status:', error)

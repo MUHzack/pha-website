@@ -241,11 +241,13 @@ function generateVoucherCode(): string {
 ### 1. Environment Variables
 
 ```env
-# .env.local
-NEXT_PUBLIC_PHA_API_URL=https://api.phaqr.my.id
+# Vercel / .env.local (server-side URL; defaults to https://api.phaqr.my.id)
+PHA_API_URL=https://api.phaqr.my.id
 # atau jika menggunakan local server dari kiosk:
-NEXT_PUBLIC_PHA_API_URL=http://192.168.1.100:3000
+PHA_API_URL=http://192.168.1.100:3000
 ```
+
+Browser website memanggil Route Handler same-origin `/api/form/{sessionId}`. Route Handler meneruskan status dan submit ke PHA API sehingga browser tidak membutuhkan konfigurasi CORS pada host API.
 
 ### 2. API Client
 
