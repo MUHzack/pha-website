@@ -102,9 +102,9 @@ Dokumen ini menjelaskan integrasi antara **pha-development** (kiosk app) dan **p
 
 ### 1. Check Form Status
 
-**Endpoint:** `GET /api/form/{sessionId}/status`
+The website checks `photobox_download_forms` in Supabase directly through its same-origin Route Handler. This avoids depending on the kiosk's local HTTP server for the form gate.
 
-The website tries this documented endpoint first, then falls back to the legacy `GET /form/{sessionId}` path if the API returns 404.
+The kiosk also exposes `GET /form/{sessionId}` on its configured download-server port for other clients.
 
 **Response:**
 ```json
