@@ -22,6 +22,7 @@ export function FormFeedback({ sessionId }: Props) {
   const [checking, setChecking] = useState(true)
   const [alreadySubmitted, setAlreadySubmitted] = useState(false)
   const [error, setError] = useState('')
+  const [statusCheckFailed, setStatusCheckFailed] = useState(false)
 
   useEffect(() => {
     checkFormStatus(sessionId)
@@ -32,6 +33,7 @@ export function FormFeedback({ sessionId }: Props) {
       })
       .catch(() => {
         setError('Tidak dapat mengecek status form')
+        setStatusCheckFailed(true)
       })
       .finally(() => {
         setChecking(false)
@@ -180,22 +182,32 @@ export function FormFeedback({ sessionId }: Props) {
           </p>
         )}
 
+        {statusCheckFailed && (
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            style={{ ...buttonStyle, marginBottom: '1rem', background: '#666' }}
+          >
+            Coba cek lagi
+          </button>
+        )}
+
         <button
           type="submit"
-          disabled={loading || !formData.feedback.trim()}
+          disabled={loading || statusCheckFailed || !formData.feedback.trim()}
           style={{
             ...buttonStyle,
-            background: loading || !formData.feedback.trim() ? '#ccc' : '#0a0a0a',
-            cursor: loading || !formData.feedback.trim() ? 'not-allowed' : 'pointer'
+            background: loading || statusCheckFailed || !formData.feedback.trim() ? '#ccc' : '#0a0a0a',
+            cursor: loading || statusCheckFailed || !formData.feedback.trim() ? 'not-allowed' : 'pointer'
           }}
           onMouseEnter={(e) => {
-            if (!loading && formData.feedback.trim()) {
+            if (!loading && !statusCheckFailed && formData.feedback.trim()) {
               e.currentTarget.style.background = '#222'
               e.currentTarget.style.transform = 'translateY(-1px)'
             }
           }}
           onMouseLeave={(e) => {
-            if (!loading && formData.feedback.trim()) {
+            if (!loading && !statusCheckFailed && formData.feedback.trim()) {
               e.currentTarget.style.background = '#0a0a0a'
               e.currentTarget.style.transform = ''
             }

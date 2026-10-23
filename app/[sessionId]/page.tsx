@@ -38,13 +38,19 @@ export default async function SessionPage({ params }: Props) {
     return <ProcessingSession />
   }
 
+  let needsForm = false
   try {
     const formStatus = await checkFormStatus(sessionId)
-    if (!formStatus.submitted) {
-      redirect(`/${sessionId}/form`)
-    }
+    needsForm = !formStatus.submitted
   } catch (error) {
     console.error('Failed to check form status:', error)
+    // If status cannot be verified, keep the download page behind the form gate.
+    needsForm = true
+  }
+
+  // Next.js redirect() throws to terminate rendering, so keep it outside try/catch.
+  if (needsForm) {
+    redirect(`/${sessionId}/form`)
   }
 
   const showShots = process.env.SHOW_SHOT_PHOTOS === 'true'
