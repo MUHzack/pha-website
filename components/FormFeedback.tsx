@@ -12,7 +12,10 @@ interface Props {
 export function FormFeedback({ sessionId }: Props) {
   const router = useRouter()
   const [formData, setFormData] = useState({
+    rating: 0,
     name: '',
+    gender: '',
+    birthDate: '',
     email: '',
     phone: '',
     feedback: ''
@@ -31,8 +34,10 @@ export function FormFeedback({ sessionId }: Props) {
           setAlreadySubmitted(true)
         }
       })
-      .catch(() => {
-        setError('Tidak dapat mengecek status form')
+      .catch((statusError: unknown) => {
+        setError(statusError instanceof Error
+          ? `Status form tidak dapat dicek: ${statusError.message}`
+          : 'Status form tidak dapat dicek. Periksa koneksi lalu coba lagi.')
         setStatusCheckFailed(true)
       })
       .finally(() => {
@@ -42,14 +47,17 @@ export function FormFeedback({ sessionId }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.feedback.trim()) return
+    if (!formData.rating || !formData.feedback.trim()) return
     
     setLoading(true)
     setError('')
 
     try {
       const result = await submitForm(sessionId, {
+        rating: formData.rating,
         name: formData.name || undefined,
+        gender: formData.gender || undefined,
+        birthDate: formData.birthDate || undefined,
         email: formData.email || undefined,
         phone: formData.phone || undefined,
         feedback: formData.feedback
@@ -132,15 +140,80 @@ export function FormFeedback({ sessionId }: Props) {
       </div>
 
       <form onSubmit={handleSubmit} style={cardStyle}>
-        <h1 style={titleStyle}>Feedback Photogenics</h1>
-        <p style={subtitleStyle}>Bagikan pengalaman Anda</p>
+        <h1 style={titleStyle}>Customer Review</h1>
+        <p style={subtitleStyle}>Ceritakan pengalamanmu bersama Photogenics</p>
+
+        <div style={formGroupStyle}>
+          <label htmlFor="customer-rating" style={fieldLabelStyle}>Rating pengalamanmu</label>
+          <div aria-label={formData.rating ? `Rating ${formData.rating} dari 5` : 'Belum memberi rating'} style={starsStyle}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <span key={star} aria-hidden="true" style={{ ...starStyle, color: star <= formData.rating ? '#f5a623' : '#d5d5d5' }}>
+                ★
+              </span>
+            ))}
+            <span style={ratingValueStyle}>{formData.rating ? `${formData.rating}/5` : 'Pilih rating'}</span>
+          </div>
+          <input
+            id="customer-rating"
+            type="range"
+            min="1"
+            max="5"
+            step="1"
+            value={formData.rating || 1}
+            onChange={(e) => setFormData({ ...formData, rating: Number(e.target.value) })}
+            aria-label="Geser untuk memilih rating dari 1 sampai 5"
+            style={ratingSliderStyle}
+            disabled={statusCheckFailed}
+          />
+          <div style={sliderLabelsStyle}><span>Kurang puas</span><span>Sangat puas</span></div>
+        </div>
 
         <div style={formGroupStyle}>
           <input
             type="text"
             placeholder="Nama (opsional)"
+            aria-label="Nama"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            style={inputStyle}
+          />
+        </div>
+
+        <div style={formGroupStyle}>
+          <label htmlFor="customer-gender" style={fieldLabelStyle}>Gender (opsional)</label>
+          <select
+            id="customer-gender"
+            value={formData.gender}
+            onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+            style={inputStyle}
+            disabled={statusCheckFailed}
+          >
+            <option value="">Pilih gender</option>
+            <option value="female">Perempuan</option>
+            <option value="male">Laki-laki</option>
+            <option value="prefer_not_to_say">Memilih tidak menjawab</option>
+          </select>
+        </div>
+
+        <div style={formGroupStyle}>
+          <label htmlFor="customer-birth-date" style={fieldLabelStyle}>Tanggal lahir (opsional)</label>
+          <input
+            id="customer-birth-date"
+            type="date"
+            value={formData.birthDate}
+            onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+            style={inputStyle}
+            disabled={statusCheckFailed}
+          />
+        </div>
+
+        <div style={formGroupStyle}>
+          <input
+            type="tel"
+            placeholder="No. HP (opsional)"
+            aria-label="Nomor HP"
+            value={formData.phone}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
             style={inputStyle}
           />
         </div>
@@ -149,6 +222,7 @@ export function FormFeedback({ sessionId }: Props) {
           <input
             type="email"
             placeholder="Email (opsional)"
+            aria-label="Email"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             style={inputStyle}
@@ -156,21 +230,13 @@ export function FormFeedback({ sessionId }: Props) {
         </div>
 
         <div style={formGroupStyle}>
-          <input
-            type="tel"
-            placeholder="No. HP (opsional)"
-            value={formData.phone}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-            style={inputStyle}
-          />
-        </div>
-
-        <div style={formGroupStyle}>
           <textarea
-            placeholder="Bagaimana pengalaman Anda? *"
+            placeholder="Pesan dan ceritakan pengalamanmu (wajib)"
+            aria-label="Pesan review"
             value={formData.feedback}
             onChange={(e) => setFormData({ ...formData, feedback: e.target.value })}
             required
+            disabled={statusCheckFailed}
             rows={4}
             style={{ ...inputStyle, resize: 'vertical', minHeight: '100px' }}
           />
@@ -194,20 +260,20 @@ export function FormFeedback({ sessionId }: Props) {
 
         <button
           type="submit"
-          disabled={loading || statusCheckFailed || !formData.feedback.trim()}
+          disabled={loading || statusCheckFailed || !formData.rating || !formData.feedback.trim()}
           style={{
             ...buttonStyle,
-            background: loading || statusCheckFailed || !formData.feedback.trim() ? '#ccc' : '#0a0a0a',
-            cursor: loading || statusCheckFailed || !formData.feedback.trim() ? 'not-allowed' : 'pointer'
+            background: loading || statusCheckFailed || !formData.rating || !formData.feedback.trim() ? '#ccc' : '#0a0a0a',
+            cursor: loading || statusCheckFailed || !formData.rating || !formData.feedback.trim() ? 'not-allowed' : 'pointer'
           }}
           onMouseEnter={(e) => {
-            if (!loading && !statusCheckFailed && formData.feedback.trim()) {
+            if (!loading && !statusCheckFailed && formData.rating && formData.feedback.trim()) {
               e.currentTarget.style.background = '#222'
               e.currentTarget.style.transform = 'translateY(-1px)'
             }
           }}
           onMouseLeave={(e) => {
-            if (!loading && !statusCheckFailed && formData.feedback.trim()) {
+            if (!loading && !statusCheckFailed && formData.rating && formData.feedback.trim()) {
               e.currentTarget.style.background = '#0a0a0a'
               e.currentTarget.style.transform = ''
             }
@@ -258,6 +324,45 @@ const subtitleStyle: React.CSSProperties = {
 
 const formGroupStyle: React.CSSProperties = {
   marginBottom: '1rem',
+}
+
+const fieldLabelStyle: React.CSSProperties = {
+  display: 'block',
+  color: '#333',
+  fontSize: '0.9rem',
+  fontWeight: 600,
+  marginBottom: '0.55rem',
+}
+
+const starsStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.15rem',
+  marginBottom: '0.35rem',
+}
+
+const starStyle: React.CSSProperties = {
+  fontSize: '1.55rem',
+  lineHeight: 1,
+}
+
+const ratingValueStyle: React.CSSProperties = {
+  color: '#666',
+  fontSize: '0.85rem',
+  marginLeft: '0.45rem',
+}
+
+const ratingSliderStyle: React.CSSProperties = {
+  width: '100%',
+  accentColor: '#0a0a0a',
+  cursor: 'pointer',
+}
+
+const sliderLabelsStyle: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  color: '#777',
+  fontSize: '0.75rem',
 }
 
 const inputStyle: React.CSSProperties = {

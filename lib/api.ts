@@ -1,4 +1,4 @@
-const PHA_API_BASE = process.env.NEXT_PUBLIC_PHA_API_URL || ''
+const PHA_API_BASE = process.env.NEXT_PUBLIC_PHA_API_URL || 'https://api.phaqr.my.id'
 
 export interface FormStatusResponse {
   submitted: boolean
@@ -19,7 +19,10 @@ export interface SubmitFormResponse {
 }
 
 export interface FormData {
+  rating: number
   name?: string
+  gender?: string
+  birthDate?: string
   email?: string
   phone?: string
   feedback: string
@@ -27,9 +30,6 @@ export interface FormData {
 
 function getApiUrl(path: string): string {
   const base = PHA_API_BASE.replace(/\/$/, '')
-  if (!base) {
-    throw new Error('NEXT_PUBLIC_PHA_API_URL belum dikonfigurasi')
-  }
   return `${base}${path}`
 }
 

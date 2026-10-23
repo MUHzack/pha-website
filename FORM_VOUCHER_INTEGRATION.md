@@ -29,21 +29,21 @@ Dokumen ini menjelaskan integrasi antara **pha-development** (kiosk app) dan **p
 │                                PHA-WEBSITE (WEB)                            │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  1. Check form status: GET /api/form/{sessionId}/status                     │
+│  1. Check form status: GET /form/{sessionId}                     │
 │     Response: { submitted: false }                                          │
 │                                                                             │
 │  2. Display Form Page                                                       │
 │     ┌─────────────────────────────────────┐                                │
-│     │  Form Feedback Photogenics          │                                │
-│     │  - Nama (opsional)                  │                                │
-│     │  - Email (opsional)                 │                                │
-│     │  - No. HP (opsional)                │                                │
-│     │  - Feedback (required)              │                                │
+│     │  Customer Review          │                                │
+│     │  - Rating 1-5, nama, gender, tanggal lahir                  │                                │
+│     │  - No. HP dan email (opsional)                 │                                │
+│     │  - Pesan (wajib)                │                                │
+│     │                │                                │
 │     │  [Submit]                           │                                │
 │     └─────────────────────────────────────┘                                │
 │                                                                             │
-│  3. Submit form: POST /api/form/{sessionId}/submit                          │
-│     Body: { name, email, phone, feedback }                                  │
+│  3. Submit form: POST /form/{sessionId}/submit                          │
+│     Body: { rating, name, gender, birthDate, email, phone, feedback }                                  │
 │     Response: {                                                             │
 │       success: true,                                                        │
 │       voucher: {                                                            │
@@ -104,6 +104,8 @@ Dokumen ini menjelaskan integrasi antara **pha-development** (kiosk app) dan **p
 
 **Endpoint:** `GET /form/{sessionId}`
 
+Website uses this endpoint for the status check. The earlier flow diagram's `/api/form/{sessionId}/status` path is outdated.
+
 **Response:**
 ```json
 {
@@ -128,9 +130,12 @@ atau jika sudah submit:
 **Request Body:**
 ```json
 {
+  "rating": 5,
   "name": "John Doe",
   "email": "john@example.com",
   "phone": "08123456789",
+  "gender": "female",
+  "birthDate": "1995-06-15",
   "feedback": "Pengalaman yang menyenangkan!"
 }
 ```
@@ -167,8 +172,11 @@ CREATE TABLE IF NOT EXISTS photobox_download_forms (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id text NOT NULL REFERENCES photobox_sessions(session_id) ON DELETE CASCADE,
   name text,
+  gender text,
+  birth_date date,
   email text,
   phone text,
+  rating smallint CHECK (rating BETWEEN 1 AND 5),
   feedback text NOT NULL,
   voucher_code text NOT NULL,
   created_at timestamptz DEFAULT now(),
@@ -177,6 +185,11 @@ CREATE TABLE IF NOT EXISTS photobox_download_forms (
 
 CREATE INDEX idx_download_forms_session ON photobox_download_forms(session_id);
 CREATE INDEX idx_download_forms_voucher ON photobox_download_forms(voucher_code);
+
+-- Additions for existing installations; old rows can keep rating NULL
+ALTER TABLE photobox_download_forms ADD COLUMN IF NOT EXISTS gender text;
+ALTER TABLE photobox_download_forms ADD COLUMN IF NOT EXISTS birth_date date;
+ALTER TABLE photobox_download_forms ADD COLUMN IF NOT EXISTS rating smallint CHECK (rating BETWEEN 1 AND 5);
 ```
 
 ### Table: `photobox_vouchers` (Existing - with new field)
@@ -238,7 +251,7 @@ NEXT_PUBLIC_PHA_API_URL=http://192.168.1.100:3000
 
 ```typescript
 // lib/api.ts
-const PHA_API_BASE = process.env.NEXT_PUBLIC_PHA_API_URL || ''
+const PHA_API_BASE = process.env.NEXT_PUBLIC_PHA_API_URL || 'https://api.phaqr.my.id'
 
 export async function checkFormStatus(sessionId: string): Promise<{ submitted: boolean; submittedAt?: string }> {
   const res = await fetch(`${PHA_API_BASE}/form/${sessionId}`)
@@ -247,7 +260,7 @@ export async function checkFormStatus(sessionId: string): Promise<{ submitted: b
 
 export async function submitForm(
   sessionId: string, 
-  data: { name?: string; email?: string; phone?: string; feedback: string }
+  data: { rating: number; name?: string; gender?: string; birthDate?: string; email?: string; phone?: string; feedback: string }
 ): Promise<{
   success: boolean
   voucher?: {
@@ -491,13 +504,21 @@ CREATE TABLE IF NOT EXISTS photobox_download_forms (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id text NOT NULL REFERENCES photobox_sessions(session_id) ON DELETE CASCADE,
   name text,
+  gender text,
+  birth_date date,
   email text,
   phone text,
+  rating smallint CHECK (rating BETWEEN 1 AND 5),
   feedback text NOT NULL,
   voucher_code text NOT NULL,
   created_at timestamptz DEFAULT now(),
   UNIQUE(session_id)
 );
+
+-- 1a. Add fields to installations that already have this table
+ALTER TABLE photobox_download_forms ADD COLUMN IF NOT EXISTS gender text;
+ALTER TABLE photobox_download_forms ADD COLUMN IF NOT EXISTS birth_date date;
+ALTER TABLE photobox_download_forms ADD COLUMN IF NOT EXISTS rating smallint CHECK (rating BETWEEN 1 AND 5);
 
 -- 2. Create indexes
 CREATE INDEX IF NOT EXISTS idx_download_forms_session ON photobox_download_forms(session_id);
