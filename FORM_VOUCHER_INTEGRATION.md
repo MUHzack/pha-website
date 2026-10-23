@@ -102,9 +102,9 @@ Dokumen ini menjelaskan integrasi antara **pha-development** (kiosk app) dan **p
 
 ### 1. Check Form Status
 
-**Endpoint:** `GET /form/{sessionId}`
+**Endpoint:** `GET /api/form/{sessionId}/status`
 
-Website uses this endpoint for the status check. The earlier flow diagram's `/api/form/{sessionId}/status` path is outdated.
+The website tries this documented endpoint first, then falls back to the legacy `GET /form/{sessionId}` path if the API returns 404.
 
 **Response:**
 ```json
@@ -125,7 +125,9 @@ atau jika sudah submit:
 
 ### 2. Submit Form
 
-**Endpoint:** `POST /form/{sessionId}/submit`
+**Endpoint:** `POST /api/form/{sessionId}/submit`
+
+If the API returns 404, the website falls back to `POST /form/{sessionId}/submit` for older backend versions.
 
 **Request Body:**
 ```json
@@ -253,10 +255,10 @@ Browser website memanggil Route Handler same-origin `/api/form/{sessionId}`. Rou
 
 ```typescript
 // lib/api.ts
-const PHA_API_BASE = process.env.NEXT_PUBLIC_PHA_API_URL || 'https://api.phaqr.my.id'
+// Browser calls go through the website's same-origin Route Handler.
 
 export async function checkFormStatus(sessionId: string): Promise<{ submitted: boolean; submittedAt?: string }> {
-  const res = await fetch(`${PHA_API_BASE}/form/${sessionId}`)
+  const res = await fetch(`/api/form/${encodeURIComponent(sessionId)}`)
   return res.json()
 }
 
@@ -273,7 +275,7 @@ export async function submitForm(
   }
   error?: string
 }> {
-  const res = await fetch(`${PHA_API_BASE}/form/${sessionId}/submit`, {
+  const res = await fetch(`/api/form/${encodeURIComponent(sessionId)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)

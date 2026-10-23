@@ -4,13 +4,42 @@ const PHA_API_BASE = (
   'https://api.phaqr.my.id'
 ).replace(/\/$/, '')
 
-export function getPHAFormEndpoint(sessionId: string, submit = false): string {
-  const endpoint = `${PHA_API_BASE}/form/${encodeURIComponent(sessionId)}`
-  return submit ? `${endpoint}/submit` : endpoint
+export function getPHAFormEndpoints(sessionId: string, submit = false): string[] {
+  const id = encodeURIComponent(sessionId)
+  if (submit) {
+    return [
+      `${PHA_API_BASE}/api/form/${id}/submit`,
+      `${PHA_API_BASE}/form/${id}/submit`,
+    ]
+  }
+
+  return [
+    `${PHA_API_BASE}/api/form/${id}/status`,
+    `${PHA_API_BASE}/form/${id}`,
+  ]
+}
+
+export async function fetchPHAForm(sessionId: string, submit = false, payload?: unknown) {
+  const endpoints = getPHAFormEndpoints(sessionId, submit)
+
+  for (let index = 0; index < endpoints.length; index += 1) {
+    const response = await fetch(endpoints[index], {
+      method: submit ? 'POST' : 'GET',
+      headers: submit ? { 'Content-Type': 'application/json' } : undefined,
+      body: submit ? JSON.stringify(payload) : undefined,
+      cache: 'no-store',
+    })
+
+    if (response.status !== 404 || index === endpoints.length - 1) {
+      return { response, endpoints }
+    }
+  }
+
+  throw new Error('PHA API tidak memiliki endpoint status form yang tersedia')
 }
 
 export async function checkPHAFormStatus(sessionId: string) {
-  const response = await fetch(getPHAFormEndpoint(sessionId), { cache: 'no-store' })
+  const { response } = await fetchPHAForm(sessionId)
   if (!response.ok) {
     throw new Error(`PHA API mengembalikan HTTP ${response.status}`)
   }

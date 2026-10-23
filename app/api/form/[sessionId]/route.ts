@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getPHAFormEndpoint } from '@/lib/pha-server'
+import { fetchPHAForm, getPHAFormEndpoints } from '@/lib/pha-server'
 
 interface RouteContext {
   params: Promise<{ sessionId: string }>
@@ -16,7 +16,13 @@ export async function GET(_request: Request, { params }: RouteContext) {
   }
 
   try {
-    const upstream = await fetch(getPHAFormEndpoint(sessionId), { cache: 'no-store' })
+    const { response: upstream, endpoints } = await fetchPHAForm(sessionId)
+    if (upstream.status === 404) {
+      return NextResponse.json(
+        { error: `PHA API tidak menemukan endpoint status form. Path yang dicoba: ${endpoints.map((url) => new URL(url).pathname).join(', ')}` },
+        { status: 404 },
+      )
+    }
     const body = await upstream.text()
     return new Response(body, {
       status: upstream.status,
@@ -42,12 +48,13 @@ export async function POST(request: Request, { params }: RouteContext) {
 
   try {
     const payload: unknown = await request.json()
-    const upstream = await fetch(getPHAFormEndpoint(sessionId, true), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      cache: 'no-store',
-    })
+    const { response: upstream, endpoints } = await fetchPHAForm(sessionId, true, payload)
+    if (upstream.status === 404) {
+      return NextResponse.json(
+        { error: `PHA API tidak menemukan endpoint submit form. Path yang dicoba: ${endpoints.map((url) => new URL(url).pathname).join(', ')}` },
+        { status: 404 },
+      )
+    }
     const body = await upstream.text()
     return new Response(body, {
       status: upstream.status,
