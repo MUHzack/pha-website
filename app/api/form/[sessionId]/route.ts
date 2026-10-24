@@ -97,8 +97,8 @@ export async function POST(request: Request, { params }: RouteContext) {
       return NextResponse.json({ success: false, error: 'Ada data yang terlalu panjang.' }, { status: 400 })
     }
     const normalizedPhone = phoneValue.replace(/[\s().-]/g, '')
-    if (!/^(?:\+?62|0)\d{8,13}$/.test(normalizedPhone)) {
-      return NextResponse.json({ success: false, error: 'Masukkan nomor HP aktif yang valid.' }, { status: 400 })
+    if (!/^08\d{8,11}$/.test(normalizedPhone)) {
+      return NextResponse.json({ success: false, error: 'Nomor HP harus diawali 08 dan berisi 10 sampai 13 angka.' }, { status: 400 })
     }
     if (!visitedBranchValue) {
       return NextResponse.json({ success: false, error: 'Cabang yang dikunjungi wajib diisi.' }, { status: 400 })

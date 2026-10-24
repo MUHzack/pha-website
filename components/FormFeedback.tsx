@@ -61,16 +61,16 @@ export function FormFeedback({ sessionId }: Props) {
     phoneIsValid && formData.visitedBranch.trim() &&
     formData.discoverySource && formData.feedback.trim().length >= 10
   )
-  const validationMessages = showValidation ? [
+  const validationMessage = showValidation ? [
     !formData.rating ? 'Pilih rating terlebih dahulu.' : '',
     !formData.name.trim() ? 'Nama wajib diisi.' : '',
     !formData.gender ? 'Pilih gender.' : '',
     !birthDateIsValid ? 'Pilih tanggal lahir yang valid dengan usia minimal 10 tahun.' : '',
-    !phoneIsValid ? 'Masukkan nomor HP Indonesia yang valid.' : '',
+    !phoneIsValid ? 'Nomor HP harus diawali 08 dan berisi 10–13 angka.' : '',
     !formData.visitedBranch.trim() ? 'Pilih cabang.' : '',
     !formData.discoverySource ? 'Pilih sumber informasi.' : '',
     formData.feedback.trim().length < 10 ? 'Pesan minimal 10 karakter.' : '',
-  ].filter(Boolean) : []
+  ].find(Boolean) : ''
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -125,8 +125,7 @@ export function FormFeedback({ sessionId }: Props) {
       <main className="download-geometric-background" style={containerStyle}>
         <div style={logoWrapStyle}><PhotogenicsLogo size="1.35rem" color="#51473a" /></div>
         <section style={cardStyle}>
-          <p style={eyebrowStyle}>PHOTOGENICS · CUSTOMER REVIEW</p>
-          <h1 style={titleStyle}>Thanks for your review</h1>
+          <h1 style={titleStyle}>Thanks For Your Review</h1>
           <p style={subtitleStyle}>Ada voucher spesial untuk kamu!</p>
           <div style={voucherBoxStyle}>
             <p style={voucherLabelStyle}>Kode voucher kamu</p>
@@ -299,10 +298,10 @@ export function FormFeedback({ sessionId }: Props) {
         >
           {loading ? 'Sending...' : 'Send'}
         </button>
-        {(validationMessages.length > 0 || error) && (
-          <div role="alert" style={{ ...errorStyle, marginTop: '1rem', marginBottom: 0 }}>
+        {(validationMessage || error) && (
+          <div role="alert" style={{ ...errorStyle, marginTop: '1rem', marginBottom: 0, textAlign: 'center' }}>
             {error && <p style={{ margin: '0 0 0.35rem' }}>{error}</p>}
-            {validationMessages.map((message) => <p key={message} style={{ margin: '0.35rem 0 0' }}>{message}</p>)}
+            {validationMessage && <p style={{ margin: '0.35rem 0 0' }}>{validationMessage}</p>}
           </div>
         )}
       </form>
@@ -352,7 +351,7 @@ function formatBirthDateForApi(value: string): string {
 
 function isValidIndonesianPhone(value: string) {
   const normalized = value.trim().replace(/[\s().-]/g, '')
-  return /^(?:\+?62|0)\d{8,13}$/.test(normalized)
+  return /^08\d{8,11}$/.test(normalized)
 }
 
 const containerStyle: CSSProperties = {
