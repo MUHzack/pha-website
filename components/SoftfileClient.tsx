@@ -82,7 +82,18 @@ export function SoftfileClient({ session, enableSinglePhotoFrames = false }: Pro
           gap: '3rem',
           flex: 1,
         }}>
-        {FILE_KINDS.map((kind, index) => {
+        {session.shots.map((shot, idx) => (
+          <ShotItem
+            key={shot.id}
+            session={session}
+            shot={shot}
+            shotIndex={idx + 1}
+            enableFrame={enableSinglePhotoFrames}
+            index={idx}/>
+        ))}
+
+        {FILE_KINDS.map((kind, idx) => {
+          const index = session.shots.length + idx
           const file = kind === 'photo' ? session.photo : kind === 'live_photo' ? session.livePhoto : session.gif
           if (!file) {
             if (kind === 'live_photo' || kind === 'gif') {
@@ -100,16 +111,6 @@ export function SoftfileClient({ session, enableSinglePhotoFrames = false }: Pro
               index={index}/>
           )
         })}
-
-        {session.shots.map((shot, idx) => (
-          <ShotItem
-            key={shot.id}
-            session={session}
-            shot={shot}
-            shotIndex={idx + 1}
-            enableFrame={enableSinglePhotoFrames}
-            index={FILE_KINDS.length + idx}/>
-        ))}
       </div>
 
       <div
@@ -445,7 +446,7 @@ function ShotItem({
             margin: 0,
             letterSpacing: '0.02em',
           }}>
-          Foto Satuan {shotIndex}
+          Foto {shotIndex}
         </h2>
       </div>
 

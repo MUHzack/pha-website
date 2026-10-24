@@ -150,7 +150,7 @@ export function FormFeedback({ sessionId }: Props) {
   return (
     <main className="download-geometric-background" style={containerStyle}>
       <div style={logoWrapStyle}><PhotogenicsLogo size="1.35rem" color="#51473a" /></div>
-      <form onSubmit={handleSubmit} style={cardStyle}>
+      <form onSubmit={handleSubmit} noValidate style={cardStyle}>
         <h1 style={titleStyle}>Customer Review</h1>
         <p style={subtitleStyle}>Bagikan pengalamanmu dan dapatkan voucher spesial dari Photogenics</p>
 
