@@ -208,17 +208,17 @@ export function FormFeedback({ sessionId }: Props) {
           <input
             id="customer-birth-date"
             type="text"
-            placeholder="dd/mm/yy"
+            placeholder="dd/mm/yyyy"
             inputMode="numeric"
             autoComplete="bday"
-            maxLength={8}
+            maxLength={10}
             disabled={statusCheckFailed}
             value={formData.birthDate}
-            onChange={(event) => setFormData({ ...formData, birthDate: event.target.value })}
+            onChange={(event) => setFormData({ ...formData, birthDate: formatBirthDateInput(event.target.value) })}
             style={inputStyle}
           />
-          <span style={hintStyle}>Format dd/mm/yy · Usia minimal 10 tahun</span>
-          {showValidation && !birthDateIsValid && <span style={fieldErrorStyle}>Masukkan tanggal yang valid dengan format dd/mm/yy dan usia minimal 10 tahun.</span>}
+          <span style={hintStyle}>Format otomatis dd/mm/yyyy · Usia minimal 10 tahun</span>
+          {showValidation && !birthDateIsValid && <span style={fieldErrorStyle}>Masukkan tanggal yang valid dengan format dd/mm/yyyy dan usia minimal 10 tahun.</span>}
         </div>
 
         <div style={formGroupStyle}>
@@ -332,18 +332,22 @@ function getMaxBirthDate() {
 }
 
 function parseBirthDate(value: string): string | null {
-  const match = /^(\d{2})\/(\d{2})\/(\d{2})$/.exec(value.trim())
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value.trim())
   if (!match) return null
 
   const day = Number(match[1])
   const month = Number(match[2])
-  const shortYear = Number(match[3])
-  const currentYear = new Date().getFullYear()
-  const currentCentury = Math.floor(currentYear / 100) * 100
-  const year = shortYear <= currentYear % 100 ? currentCentury + shortYear : currentCentury - 100 + shortYear
+  const year = Number(match[3])
   const date = new Date(Date.UTC(year, month - 1, day))
   if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+}
+
+function formatBirthDateInput(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 8)
+  if (digits.length <= 2) return digits
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`
 }
 
 function isValidIndonesianPhone(value: string) {

@@ -83,7 +83,7 @@ export async function POST(request: Request, { params }: RouteContext) {
       return NextResponse.json({ success: false, error: 'Nama wajib diisi.' }, { status: 400 })
     }
     if (!birthDateValue) {
-      return NextResponse.json({ success: false, error: 'Gunakan format tanggal lahir dd/mm/yy yang valid.' }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Gunakan format tanggal lahir dd/mm/yyyy yang valid.' }, { status: 400 })
     }
     {
       const minimumBirthDate = new Date()
@@ -213,15 +213,12 @@ export async function POST(request: Request, { params }: RouteContext) {
 }
 
 function parseBirthDateInput(value: string): string | null {
-  const match = /^(\d{2})\/(\d{2})\/(\d{2})$/.exec(value)
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value)
   if (!match) return null
 
   const day = Number(match[1])
   const month = Number(match[2])
-  const shortYear = Number(match[3])
-  const currentYear = new Date().getFullYear()
-  const currentCentury = Math.floor(currentYear / 100) * 100
-  const year = shortYear <= currentYear % 100 ? currentCentury + shortYear : currentCentury - 100 + shortYear
+  const year = Number(match[3])
   const date = new Date(Date.UTC(year, month - 1, day))
   if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
