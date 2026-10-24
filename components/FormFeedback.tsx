@@ -37,6 +37,7 @@ export function FormFeedback({ sessionId }: Props) {
   const [error, setError] = useState('')
   const [statusCheckFailed, setStatusCheckFailed] = useState(false)
   const [showSocialMediaConsent, setShowSocialMediaConsent] = useState(false)
+  const [showValidation, setShowValidation] = useState(false)
 
   useEffect(() => {
     checkFormStatus(sessionId)
@@ -52,17 +53,20 @@ export function FormFeedback({ sessionId }: Props) {
       .finally(() => setChecking(false))
   }, [sessionId])
 
-  const maxBirthDate = getMaxBirthDate()
+  const birthDateIso = parseBirthDate(formData.birthDate)
+  const birthDateIsValid = Boolean(birthDateIso && birthDateIso <= getMaxBirthDate())
   const phoneIsValid = isValidIndonesianPhone(formData.phone)
   const canSubmit = Boolean(
-    formData.rating && formData.name.trim() && formData.gender && formData.birthDate && formData.birthDate <= maxBirthDate &&
+    formData.rating && formData.name.trim() && formData.gender && birthDateIsValid &&
     phoneIsValid && formData.visitedBranch.trim() &&
     formData.discoverySource && formData.feedback.trim().length >= 10
   )
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!canSubmit || statusCheckFailed) return
+    if (statusCheckFailed) return
+    setShowValidation(true)
+    if (!canSubmit) return
 
     setShowSocialMediaConsent(true)
   }
@@ -164,6 +168,7 @@ export function FormFeedback({ sessionId }: Props) {
             ))}
           </div>
           <span style={ratingValueStyle}>{formData.rating ? `${formData.rating} dari 5` : 'Ketuk bintang untuk memberi rating'}</span>
+          {showValidation && !formData.rating && <span style={fieldErrorStyle}>Pilih rating terlebih dahulu.</span>}
         </div>
 
         <div style={formGroupStyle}>
@@ -174,12 +179,12 @@ export function FormFeedback({ sessionId }: Props) {
             placeholder="Nama"
             autoComplete="name"
             maxLength={200}
-            required
             disabled={statusCheckFailed}
             value={formData.name}
             onChange={(event) => setFormData({ ...formData, name: event.target.value })}
             style={inputStyle}
           />
+          {showValidation && !formData.name.trim() && <span style={fieldErrorStyle}>Nama wajib diisi.</span>}
         </div>
 
         <div style={formGroupStyle}>
@@ -190,27 +195,30 @@ export function FormFeedback({ sessionId }: Props) {
             onChange={(event) => setFormData({ ...formData, gender: event.target.value })}
             style={inputStyle}
             disabled={statusCheckFailed}
-            required
           >
             <option value="">Pilih gender</option>
             <option value="female">Perempuan</option>
             <option value="male">Laki-laki</option>
           </select>
+          {showValidation && !formData.gender && <span style={fieldErrorStyle}>Pilih gender.</span>}
         </div>
 
         <div style={formGroupStyle}>
           <label htmlFor="customer-birth-date" style={fieldLabelStyle}>Tanggal lahir</label>
           <input
             id="customer-birth-date"
-            type="date"
-            max={maxBirthDate}
-            required
+            type="text"
+            placeholder="dd/mm/yy"
+            inputMode="numeric"
+            autoComplete="bday"
+            maxLength={8}
             disabled={statusCheckFailed}
             value={formData.birthDate}
             onChange={(event) => setFormData({ ...formData, birthDate: event.target.value })}
             style={inputStyle}
           />
-          <span style={hintStyle}>Usia minimal 10 tahun</span>
+          <span style={hintStyle}>Format dd/mm/yy · Usia minimal 10 tahun</span>
+          {showValidation && !birthDateIsValid && <span style={fieldErrorStyle}>Masukkan tanggal yang valid dengan format dd/mm/yy dan usia minimal 10 tahun.</span>}
         </div>
 
         <div style={formGroupStyle}>
@@ -222,13 +230,13 @@ export function FormFeedback({ sessionId }: Props) {
             autoComplete="tel"
             inputMode="tel"
             maxLength={40}
-            required
             disabled={statusCheckFailed}
             value={formData.phone}
             onChange={(event) => setFormData({ ...formData, phone: event.target.value })}
             style={inputStyle}
           />
           <span style={hintStyle}>Gunakan nomor aktif Indonesia, contoh 081234567890</span>
+          {showValidation && !phoneIsValid && <span style={fieldErrorStyle}>Masukkan nomor HP Indonesia yang valid.</span>}
         </div>
 
         <div style={formGroupStyle}>
@@ -236,13 +244,13 @@ export function FormFeedback({ sessionId }: Props) {
           <select
             id="visited-branch"
             value={formData.visitedBranch}
-            required
             disabled={statusCheckFailed}
             onChange={(event) => setFormData({ ...formData, visitedBranch: event.target.value })}
             style={inputStyle}
           >
             {VISITED_BRANCHES.map((branch) => <option key={branch} value={branch}>{branch}</option>)}
           </select>
+          {showValidation && !formData.visitedBranch.trim() && <span style={fieldErrorStyle}>Pilih cabang.</span>}
         </div>
 
         <div style={formGroupStyle}>
@@ -252,12 +260,12 @@ export function FormFeedback({ sessionId }: Props) {
             value={formData.discoverySource}
             onChange={(event) => setFormData({ ...formData, discoverySource: event.target.value })}
             style={inputStyle}
-            required
             disabled={statusCheckFailed}
           >
             <option value="">Pilih sumber informasi</option>
             {DISCOVERY_SOURCES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
+          {showValidation && !formData.discoverySource && <span style={fieldErrorStyle}>Pilih sumber informasi.</span>}
         </div>
 
         <div style={formGroupStyle}>
@@ -267,14 +275,13 @@ export function FormFeedback({ sessionId }: Props) {
             placeholder="Ceritakan pengalamanmu"
             value={formData.feedback}
             onChange={(event) => setFormData({ ...formData, feedback: event.target.value })}
-            required
-            minLength={10}
             maxLength={5000}
             disabled={statusCheckFailed}
             rows={4}
             style={{ ...inputStyle, resize: 'vertical', minHeight: '112px' }}
           />
           <span style={hintStyle}>Minimal 10 karakter</span>
+          {showValidation && formData.feedback.trim().length < 10 && <span style={fieldErrorStyle}>Pesan minimal 10 karakter.</span>}
         </div>
 
         {error && <p role="alert" style={errorStyle}>{error}</p>}
@@ -287,11 +294,11 @@ export function FormFeedback({ sessionId }: Props) {
 
         <button
           type="submit"
-          disabled={loading || statusCheckFailed || !canSubmit}
+          disabled={loading || statusCheckFailed}
           style={{
             ...buttonStyle,
-            opacity: loading || statusCheckFailed || !canSubmit ? 0.55 : 1,
-            cursor: loading || statusCheckFailed || !canSubmit ? 'not-allowed' : 'pointer',
+            opacity: loading || statusCheckFailed ? 0.55 : 1,
+            cursor: loading || statusCheckFailed ? 'not-allowed' : 'pointer',
           }}
         >
           {loading ? 'Sending...' : 'Send'}
@@ -322,6 +329,21 @@ function getMaxBirthDate() {
   const date = new Date()
   date.setUTCFullYear(date.getUTCFullYear() - 10)
   return date.toISOString().slice(0, 10)
+}
+
+function parseBirthDate(value: string): string | null {
+  const match = /^(\d{2})\/(\d{2})\/(\d{2})$/.exec(value.trim())
+  if (!match) return null
+
+  const day = Number(match[1])
+  const month = Number(match[2])
+  const shortYear = Number(match[3])
+  const currentYear = new Date().getFullYear()
+  const currentCentury = Math.floor(currentYear / 100) * 100
+  const year = shortYear <= currentYear % 100 ? currentCentury + shortYear : currentCentury - 100 + shortYear
+  const date = new Date(Date.UTC(year, month - 1, day))
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
 function isValidIndonesianPhone(value: string) {
@@ -436,6 +458,14 @@ const hintStyle: CSSProperties = {
   marginTop: '0.4rem',
   color: '#887f73',
   fontSize: '0.76rem',
+}
+
+const fieldErrorStyle: CSSProperties = {
+  display: 'block',
+  marginTop: '0.4rem',
+  color: '#b42318',
+  fontSize: '0.78rem',
+  lineHeight: 1.4,
 }
 
 const errorStyle: CSSProperties = {

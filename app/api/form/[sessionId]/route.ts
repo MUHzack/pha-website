@@ -58,7 +58,8 @@ export async function POST(request: Request, { params }: RouteContext) {
     const rating = payload.rating
     const feedback = typeof payload.feedback === 'string' ? payload.feedback.trim() : ''
     const genderValue = typeof payload.gender === 'string' ? payload.gender : ''
-    const birthDateValue = typeof payload.birthDate === 'string' ? payload.birthDate : ''
+    const birthDateInput = typeof payload.birthDate === 'string' ? payload.birthDate.trim() : ''
+    const birthDateValue = parseBirthDateInput(birthDateInput)
     const nameValue = typeof payload.name === 'string' ? payload.name.trim() : ''
     const phoneValue = typeof payload.phone === 'string' ? payload.phone.trim() : ''
     const visitedBranchValue = typeof payload.visitedBranch === 'string' ? payload.visitedBranch.trim() : ''
@@ -81,14 +82,10 @@ export async function POST(request: Request, { params }: RouteContext) {
     if (!nameValue) {
       return NextResponse.json({ success: false, error: 'Nama wajib diisi.' }, { status: 400 })
     }
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDateValue)) {
-      return NextResponse.json({ success: false, error: 'Format tanggal lahir tidak valid.' }, { status: 400 })
+    if (!birthDateValue) {
+      return NextResponse.json({ success: false, error: 'Gunakan format tanggal lahir dd/mm/yy yang valid.' }, { status: 400 })
     }
     {
-      const parsedDate = new Date(`${birthDate}T00:00:00.000Z`)
-      if (Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== birthDateValue) {
-        return NextResponse.json({ success: false, error: 'Tanggal lahir tidak valid.' }, { status: 400 })
-      }
       const minimumBirthDate = new Date()
       minimumBirthDate.setUTCHours(0, 0, 0, 0)
       minimumBirthDate.setUTCFullYear(minimumBirthDate.getUTCFullYear() - 10)
@@ -213,4 +210,19 @@ export async function POST(request: Request, { params }: RouteContext) {
       { status: 500 },
     )
   }
+}
+
+function parseBirthDateInput(value: string): string | null {
+  const match = /^(\d{2})\/(\d{2})\/(\d{2})$/.exec(value)
+  if (!match) return null
+
+  const day = Number(match[1])
+  const month = Number(match[2])
+  const shortYear = Number(match[3])
+  const currentYear = new Date().getFullYear()
+  const currentCentury = Math.floor(currentYear / 100) * 100
+  const year = shortYear <= currentYear % 100 ? currentCentury + shortYear : currentCentury - 100 + shortYear
+  const date = new Date(Date.UTC(year, month - 1, day))
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
