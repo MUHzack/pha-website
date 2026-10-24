@@ -26,7 +26,7 @@ export function FormFeedback({ sessionId }: Props) {
     gender: '',
     birthDate: '',
     phone: '',
-    visitedBranch: VISITED_BRANCHES[0],
+    visitedBranch: String(VISITED_BRANCHES[0]),
     discoverySource: '',
     feedback: '',
   })
