@@ -26,6 +26,7 @@ export interface FormData {
   visitedBranch: string
   discoverySource: string
   feedback: string
+  socialMediaConsent: boolean
 }
 
 export async function checkFormStatus(sessionId: string): Promise<FormStatusResponse> {

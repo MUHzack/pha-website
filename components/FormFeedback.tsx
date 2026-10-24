@@ -13,9 +13,10 @@ const DISCOVERY_SOURCES = [
   ['instagram', 'Instagram'],
   ['tiktok', 'TikTok'],
   ['friends_family', 'Teman atau keluarga'],
-  ['google', 'Google / pencarian internet'],
   ['other', 'Lainnya'],
 ] as const
+
+const VISITED_BRANCHES = ['Kedai Asagi Sidoarjo'] as const
 
 export function FormFeedback({ sessionId }: Props) {
   const router = useRouter()
@@ -25,7 +26,7 @@ export function FormFeedback({ sessionId }: Props) {
     gender: '',
     birthDate: '',
     phone: '',
-    visitedBranch: '',
+    visitedBranch: VISITED_BRANCHES[0],
     discoverySource: '',
     feedback: '',
   })
@@ -35,6 +36,7 @@ export function FormFeedback({ sessionId }: Props) {
   const [alreadySubmitted, setAlreadySubmitted] = useState(false)
   const [error, setError] = useState('')
   const [statusCheckFailed, setStatusCheckFailed] = useState(false)
+  const [showSocialMediaConsent, setShowSocialMediaConsent] = useState(false)
 
   useEffect(() => {
     checkFormStatus(sessionId)
@@ -58,9 +60,15 @@ export function FormFeedback({ sessionId }: Props) {
     formData.discoverySource && formData.feedback.trim().length >= 10
   )
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!canSubmit || statusCheckFailed) return
+
+    setShowSocialMediaConsent(true)
+  }
+
+  const confirmSubmit = async (socialMediaConsent: boolean) => {
+    setShowSocialMediaConsent(false)
 
     setLoading(true)
     setError('')
@@ -68,6 +76,7 @@ export function FormFeedback({ sessionId }: Props) {
       const payload: FormData = {
         ...formData,
         gender: formData.gender as FormData['gender'],
+        socialMediaConsent,
       }
       const result = await submitForm(sessionId, payload)
       if (result.success && result.voucher) setVoucher(result.voucher)
@@ -162,7 +171,7 @@ export function FormFeedback({ sessionId }: Props) {
           <input
             id="customer-name"
             type="text"
-            placeholder="Nama lengkap"
+            placeholder="Nama"
             autoComplete="name"
             maxLength={200}
             required
@@ -224,17 +233,16 @@ export function FormFeedback({ sessionId }: Props) {
 
         <div style={formGroupStyle}>
           <label htmlFor="visited-branch" style={fieldLabelStyle}>Cabang yang dikunjungi</label>
-          <input
+          <select
             id="visited-branch"
-            type="text"
-            placeholder="Nama cabang Photogenics"
-            maxLength={200}
+            value={formData.visitedBranch}
             required
             disabled={statusCheckFailed}
-            value={formData.visitedBranch}
             onChange={(event) => setFormData({ ...formData, visitedBranch: event.target.value })}
             style={inputStyle}
-          />
+          >
+            {VISITED_BRANCHES.map((branch) => <option key={branch} value={branch}>{branch}</option>)}
+          </select>
         </div>
 
         <div style={formGroupStyle}>
@@ -289,6 +297,23 @@ export function FormFeedback({ sessionId }: Props) {
           {loading ? 'Sending...' : 'Send'}
         </button>
       </form>
+      {showSocialMediaConsent && (
+        <div style={modalBackdropStyle}>
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="social-media-title"
+            style={modalStyle}
+          >
+            <h2 id="social-media-title" style={{ ...titleStyle, fontSize: '1.35rem' }}>Social Media</h2>
+            <p style={{ ...subtitleStyle, marginBottom: '1.5rem' }}>Apakah boleh fotomu diupload di sosial media Photogenics?</p>
+            <div style={consentActionsStyle}>
+              <button type="button" onClick={() => confirmSubmit(true)} disabled={loading} style={buttonStyle}>Boleh</button>
+              <button type="button" onClick={() => confirmSubmit(false)} disabled={loading} style={declineButtonStyle}>Tidak</button>
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   )
 }
@@ -441,6 +466,29 @@ const loadingStyle: CSSProperties = {
   gap: '1rem',
   marginTop: '2rem',
 }
+
+const modalBackdropStyle: CSSProperties = {
+  position: 'fixed',
+  inset: 0,
+  zIndex: 10,
+  display: 'grid',
+  placeItems: 'center',
+  padding: '1rem',
+  background: 'rgba(23,21,18,0.55)',
+}
+
+const modalStyle: CSSProperties = {
+  width: '100%',
+  maxWidth: '420px',
+  padding: 'clamp(1.35rem, 5vw, 2rem)',
+  borderRadius: '22px',
+  background: '#fff',
+  boxShadow: '0 24px 70px rgba(0,0,0,0.22)',
+  textAlign: 'center',
+}
+
+const consentActionsStyle: CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }
+const declineButtonStyle: CSSProperties = { ...buttonStyle, background: '#eee9e1', color: '#352f28' }
 
 const spinnerStyle: CSSProperties = {
   width: '32px',

@@ -63,6 +63,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     const phoneValue = typeof payload.phone === 'string' ? payload.phone.trim() : ''
     const visitedBranchValue = typeof payload.visitedBranch === 'string' ? payload.visitedBranch.trim() : ''
     const discoverySourceValue = typeof payload.discoverySource === 'string' ? payload.discoverySource : ''
+    const socialMediaConsent = payload.socialMediaConsent
     const gender = genderValue || null
     const birthDate = birthDateValue || null
     const name = nameValue || null
@@ -107,6 +108,9 @@ export async function POST(request: Request, { params }: RouteContext) {
     }
     if (!['instagram', 'tiktok', 'friends_family', 'google', 'other'].includes(discoverySourceValue)) {
       return NextResponse.json({ success: false, error: 'Pilih sumber informasi Photogenics.' }, { status: 400 })
+    }
+    if (typeof socialMediaConsent !== 'boolean') {
+      return NextResponse.json({ success: false, error: 'Konfirmasi izin sosial media wajib dipilih.' }, { status: 400 })
     }
 
     const supabase = getSupabaseAdmin()
@@ -158,6 +162,7 @@ export async function POST(request: Request, { params }: RouteContext) {
         p_voucher_code: code,
         p_voucher_code_sha256: codeSha256,
         p_discount_percent: discountPercent,
+        p_social_media_consent: socialMediaConsent,
       })
 
       if (error) {
