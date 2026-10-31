@@ -4,6 +4,7 @@ import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { checkFormStatus, submitForm, type FormData, type VoucherData } from '@/lib/api'
 import { PhotogenicsLogo } from './PhotogenicsLogo'
+import { FlowStepper } from './FlowStepper'
 
 interface Props {
   sessionId: string
@@ -17,6 +18,8 @@ const DISCOVERY_SOURCES = [
 ] as const
 
 const VISITED_BRANCHES = ['Kedai Asagi Sidoarjo'] as const
+
+const introSeenKey = (sessionId: string) => `pha-form-intro-seen:${sessionId}`
 
 export function FormFeedback({ sessionId }: Props) {
   const router = useRouter()
@@ -38,11 +41,21 @@ export function FormFeedback({ sessionId }: Props) {
   const [statusCheckFailed, setStatusCheckFailed] = useState(false)
   const [showSocialMediaConsent, setShowSocialMediaConsent] = useState(false)
   const [showValidation, setShowValidation] = useState(false)
+  const [showIntro, setShowIntro] = useState(false)
 
   useEffect(() => {
     checkFormStatus(sessionId)
       .then((result) => {
-        if (result.submitted) setAlreadySubmitted(true)
+        if (result.submitted) {
+          setAlreadySubmitted(true)
+          return
+        }
+        // Show the intro popup only the first time this session's form is opened.
+        try {
+          if (!localStorage.getItem(introSeenKey(sessionId))) setShowIntro(true)
+        } catch {
+          setShowIntro(true)
+        }
       })
       .catch((statusError: unknown) => {
         setError(statusError instanceof Error
@@ -71,6 +84,15 @@ export function FormFeedback({ sessionId }: Props) {
     !formData.discoverySource ? 'Pilih sumber informasi.' : '',
     formData.feedback.trim().length < 10 ? 'Pesan minimal 10 karakter.' : '',
   ].find(Boolean) : ''
+
+  const dismissIntro = () => {
+    setShowIntro(false)
+    try {
+      localStorage.setItem(introSeenKey(sessionId), '1')
+    } catch {
+      // Storage unavailable (private mode); the popup may show again on reload.
+    }
+  }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -124,6 +146,7 @@ export function FormFeedback({ sessionId }: Props) {
     return (
       <main className="download-geometric-background" style={containerStyle}>
         <div style={logoWrapStyle}><PhotogenicsLogo size="1.35rem" color="#51473a" /></div>
+        <FlowStepper current={1} />
         <section style={cardStyle}>
           <h1 style={titleStyle}>Thanks For Your Review</h1>
           <p style={subtitleStyle}>Ada voucher spesial untuk kamu!</p>
@@ -150,6 +173,7 @@ export function FormFeedback({ sessionId }: Props) {
   return (
     <main className="download-geometric-background" style={containerStyle}>
       <div style={logoWrapStyle}><PhotogenicsLogo size="1.35rem" color="#51473a" /></div>
+      <FlowStepper current={0} />
       <form onSubmit={handleSubmit} noValidate style={cardStyle}>
         <h1 style={titleStyle}>Customer Review</h1>
         <p style={subtitleStyle}>Bagikan pengalamanmu dan dapatkan voucher spesial dari Photogenics</p>
@@ -305,6 +329,29 @@ export function FormFeedback({ sessionId }: Props) {
           </div>
         )}
       </form>
+      {showIntro && (
+        <div style={modalBackdropStyle}>
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="form-intro-title"
+            style={modalStyle}
+          >
+            <div style={introIconStyle} aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="13" r="8" />
+                <path d="M12 9v4l2.5 2.5M9.5 2.5h5" />
+              </svg>
+            </div>
+            <h2 id="form-intro-title" style={{ ...titleStyle, fontSize: '1.35rem' }}>Sebelum Download</h2>
+            <p style={{ ...subtitleStyle, marginBottom: '1.5rem' }}>
+              Kamu bisa isi form review dulu selama <strong style={{ color: '#352f28' }}>±5 menit</strong> untuk
+              mendapatkan <strong style={{ color: '#352f28' }}>voucher gratis</strong> dan download softfile-mu setelahnya.
+            </p>
+            <button type="button" onClick={dismissIntro} autoFocus style={buttonStyle}>Isi Form Sekarang</button>
+          </section>
+        </div>
+      )}
       {showSocialMediaConsent && (
         <div style={modalBackdropStyle}>
           <section
@@ -509,6 +556,18 @@ const modalStyle: CSSProperties = {
   background: '#fff',
   boxShadow: '0 24px 70px rgba(0,0,0,0.22)',
   textAlign: 'center',
+}
+
+const introIconStyle: CSSProperties = {
+  width: '56px',
+  height: '56px',
+  margin: '0 auto 1rem',
+  borderRadius: '50%',
+  display: 'grid',
+  placeItems: 'center',
+  color: '#9a7547',
+  background: 'linear-gradient(145deg, #f5f0e8 0%, #eee5d8 100%)',
+  border: '1px solid rgba(154,117,71,0.25)',
 }
 
 const consentActionsStyle: CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }

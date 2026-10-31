@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { SessionData, FileKind, SessionFile } from '@/types/session'
 import { PhotogenicsLogo } from './PhotogenicsLogo'
+import { FlowStepper } from './FlowStepper'
 import { getPublicUrl } from '@/lib/supabase'
 
 const FILE_KIND_LABELS: Record<FileKind, string> = {
@@ -45,6 +46,8 @@ export function SoftfileClient({ session, enableSinglePhotoFrames = false }: Pro
       <div style={{ animation: 'fadeIn 0.5s ease both', marginBottom: '1.5rem' }}>
         <PhotogenicsLogo size="1.35rem" />
       </div>
+
+      <FlowStepper current={2} />
 
       <div 
         style={{ 
