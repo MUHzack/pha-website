@@ -23,14 +23,19 @@ function generateVoucherCode(): string {
   return Array.from(bytes, (byte) => chars[byte % chars.length]).join('')
 }
 
-export async function GET(_request: Request, { params }: RouteContext) {
+function getBranch(request: Request): 'primary' | 'uc' {
+  return new URL(request.url).searchParams.get('branch') === 'uc' ? 'uc' : 'primary'
+}
+
+export async function GET(request: Request, { params }: RouteContext) {
   const { sessionId } = await params
+  const branch = getBranch(request)
   if (!isValidSessionId(sessionId)) {
     return NextResponse.json({ error: 'ID sesi tidak valid' }, { status: 400 })
   }
 
   try {
-    const status = await getFormStatus(sessionId)
+    const status = await getFormStatus(sessionId, branch)
     return NextResponse.json(status, {
       headers: { 'Cache-Control': 'no-store' },
     })
@@ -45,6 +50,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
 
 export async function POST(request: Request, { params }: RouteContext) {
   const { sessionId } = await params
+  const branch = getBranch(request)
   if (!isValidSessionId(sessionId)) {
     return NextResponse.json({ error: 'ID sesi tidak valid' }, { status: 400 })
   }
@@ -110,7 +116,7 @@ export async function POST(request: Request, { params }: RouteContext) {
       return NextResponse.json({ success: false, error: 'Konfirmasi izin sosial media wajib dipilih.' }, { status: 400 })
     }
 
-    const supabase = getSupabaseAdmin()
+    const supabase = getSupabaseAdmin(branch)
     const { data: sessionFile, error: sessionError } = await supabase
       .from('photobox_session_files')
       .select('id')

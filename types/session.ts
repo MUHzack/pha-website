@@ -24,6 +24,7 @@ export interface SessionFile {
 
 export interface SessionData {
   sessionId: string
+  branch?: 'primary' | 'uc'
   files: SessionFile[]
   photo: SessionFile | null
   livePhoto: SessionFile | null

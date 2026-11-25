@@ -1,7 +1,8 @@
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
+import type { Branch } from '@/lib/supabase'
 
-export async function getFormStatus(sessionId: string) {
-  const { data, error } = await getSupabaseAdmin()
+export async function getFormStatus(sessionId: string, branch: Branch = 'primary') {
+  const { data, error } = await getSupabaseAdmin(branch)
     .from('photobox_download_forms')
     .select('created_at')
     .eq('session_id', sessionId)

@@ -14,6 +14,21 @@ pnpm dev
 bun dev
 ```
 
+## Softfile cabang UC
+
+URL primary tetap `/{sessionId}` dan memakai konfigurasi Supabase yang sudah ada. QR UC memakai `/uc/{sessionId}` dan membutuhkan konfigurasi tambahan berikut di `.env` lokal serta environment deployment:
+
+```env
+NEXT_PUBLIC_UC_SUPABASE_URL=https://project-uc.supabase.co
+NEXT_PUBLIC_UC_SUPABASE_ANON_KEY=...
+UC_SUPABASE_URL=https://project-uc.supabase.co
+UC_SUPABASE_SERVICE_ROLE_KEY=...
+```
+
+Nilai `NEXT_PUBLIC_*` berisi URL dan anon key yang memang digunakan browser untuk membuat URL file, dan harus dilindungi dengan RLS/storage policy seperti anon key primary. `UC_SUPABASE_SERVICE_ROLE_KEY` hanya untuk server; jangan beri prefix `NEXT_PUBLIC_`. Jika bucket `photogenics-media-db` di UC menggunakan endpoint S3 publik tersendiri, tambahkan `NEXT_PUBLIC_UC_S3_PUBLIC_URL`; jika tidak, URL file dibuat dari Supabase UC.
+
+Project Supabase UC harus memiliki tabel dan fungsi yang dipakai alur softfile, review, dan voucher. Jalankan migration di `supabase/migrations` pada project UC juga. Primary tetap membaca dan menulis ke database yang saat ini dikonfigurasi.
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.

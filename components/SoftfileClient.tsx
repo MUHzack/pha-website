@@ -214,9 +214,9 @@ function MediaItem({
   const ref = useRef<HTMLDivElement>(null)
   
   const previewUrl = kind === 'photo' 
-    ? getPublicUrl(file.storage_bucket, file.storage_path, { width: 800, quality: 80 })
-    : getPublicUrl(file.storage_bucket, file.storage_path)
-  const downloadUrl = getPublicUrl(file.storage_bucket, file.storage_path)
+    ? getPublicUrl(file.storage_bucket, file.storage_path, { width: 800, quality: 80 }, session.branch)
+    : getPublicUrl(file.storage_bucket, file.storage_path, undefined, session.branch)
+  const downloadUrl = getPublicUrl(file.storage_bucket, file.storage_path, undefined, session.branch)
   
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -393,8 +393,8 @@ function ShotItem({
   const [showFrameSelector, setShowFrameSelector] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
-  const previewUrl = getPublicUrl(shot.storage_bucket, shot.storage_path, { width: 800, quality: 80 })
-  const downloadUrl = getPublicUrl(shot.storage_bucket, shot.storage_path)
+  const previewUrl = getPublicUrl(shot.storage_bucket, shot.storage_path, { width: 800, quality: 80 }, session.branch)
+  const downloadUrl = getPublicUrl(shot.storage_bucket, shot.storage_path, undefined, session.branch)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -578,7 +578,7 @@ function FrameSelector({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          imageUrl: getPublicUrl(shot.storage_bucket, shot.storage_path),
+          imageUrl: getPublicUrl(shot.storage_bucket, shot.storage_path, undefined, session.branch),
           frameUrl: frame.overlayUrl,
         }),
       })

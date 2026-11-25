@@ -1,15 +1,33 @@
 import { createClient } from '@supabase/supabase-js'
 import { SessionData, SessionFile } from '@/types/session'
 
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+export type Branch = 'primary' | 'uc'
 
-export async function getSessionData(sessionId: string): Promise<SessionData | null> {
+const clients = new Map<Branch, ReturnType<typeof createClient<any>>>()
+
+export function getSupabase(branch: Branch = 'primary') {
+  const existing = clients.get(branch)
+  if (existing) return existing
+
+  const url = branch === 'uc' ? process.env.NEXT_PUBLIC_UC_SUPABASE_URL : process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = branch === 'uc' ? process.env.NEXT_PUBLIC_UC_SUPABASE_ANON_KEY : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) {
+    throw new Error(branch === 'uc'
+      ? 'Konfigurasi Supabase UC belum lengkap. Tambahkan NEXT_PUBLIC_UC_SUPABASE_URL dan NEXT_PUBLIC_UC_SUPABASE_ANON_KEY.'
+      : 'Konfigurasi Supabase primary belum lengkap.')
+  }
+
+  const client = createClient(url, key)
+  clients.set(branch, client)
+  return client
+}
+
+export const supabase = getSupabase()
+
+export async function getSessionData(sessionId: string, branch: Branch = 'primary'): Promise<SessionData | null> {
   console.log('🔥 Fetching session:', sessionId)
 
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase(branch)
     .from('photobox_session_files')
     .select('*')
     .eq('session_id', sessionId)
@@ -32,6 +50,7 @@ export async function getSessionData(sessionId: string): Promise<SessionData | n
 
   return {
     sessionId,
+    branch,
     files,
     photo: photo ?? null,
     livePhoto: livePhoto ?? null,
@@ -45,9 +64,12 @@ function shotNumber(path: string): number {
   return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER
 }
 
-export function getPublicUrl(bucket: string, path: string, options?: { width?: number; quality?: number }): string {
-  if (bucket === 'photogenics-media-db' && process.env.NEXT_PUBLIC_S3_PUBLIC_URL) {
-    const baseUrl = `${process.env.NEXT_PUBLIC_S3_PUBLIC_URL}/${bucket}/${path}`
+export function getPublicUrl(bucket: string, path: string, options?: { width?: number; quality?: number }, branch: Branch = 'primary'): string {
+  const s3PublicUrl = branch === 'uc'
+    ? process.env.NEXT_PUBLIC_UC_S3_PUBLIC_URL
+    : process.env.NEXT_PUBLIC_S3_PUBLIC_URL
+  if (bucket === 'photogenics-media-db' && s3PublicUrl) {
+    const baseUrl = `${s3PublicUrl}/${bucket}/${path}`
     if (options?.width || options?.quality) {
       const params = new URLSearchParams()
       if (options.width) params.set('width', String(options.width))
@@ -56,6 +78,6 @@ export function getPublicUrl(bucket: string, path: string, options?: { width?: n
     }
     return baseUrl
   }
-  const { data } = supabase.storage.from(bucket).getPublicUrl(path)
+  const { data } = getSupabase(branch).storage.from(bucket).getPublicUrl(path)
   return data.publicUrl
 }

@@ -29,8 +29,9 @@ export interface FormData {
   socialMediaConsent: boolean
 }
 
-export async function checkFormStatus(sessionId: string): Promise<FormStatusResponse> {
-  const res = await fetch(`/api/form/${encodeURIComponent(sessionId)}`, {
+export async function checkFormStatus(sessionId: string, branch: 'primary' | 'uc' = 'primary'): Promise<FormStatusResponse> {
+  const apiPath = `/api/form/${encodeURIComponent(sessionId)}`
+  const res = await fetch(branch === 'uc' ? `${apiPath}?branch=uc` : apiPath, {
     cache: 'no-store',
   })
   if (!res.ok) {
@@ -46,9 +47,11 @@ export async function checkFormStatus(sessionId: string): Promise<FormStatusResp
 
 export async function submitForm(
   sessionId: string, 
-  data: FormData
+  data: FormData,
+  branch: 'primary' | 'uc' = 'primary'
 ): Promise<SubmitFormResponse> {
-  const res = await fetch(`/api/form/${encodeURIComponent(sessionId)}`, {
+  const apiPath = `/api/form/${encodeURIComponent(sessionId)}`
+  const res = await fetch(branch === 'uc' ? `${apiPath}?branch=uc` : apiPath, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)

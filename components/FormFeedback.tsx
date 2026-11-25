@@ -8,6 +8,7 @@ import { FlowStepper } from './FlowStepper'
 
 interface Props {
   sessionId: string
+  branch?: 'primary' | 'uc'
 }
 
 const DISCOVERY_SOURCES = [
@@ -17,11 +18,11 @@ const DISCOVERY_SOURCES = [
   ['other', 'Lainnya'],
 ] as const
 
-const VISITED_BRANCHES = ['Kedai Asagi Sidoarjo'] as const
+const VISITED_BRANCHES = ['Kedai Asagi Sidoarjo', 'UC'] as const
 
 const introSeenKey = (sessionId: string) => `pha-form-intro-seen:${sessionId}`
 
-export function FormFeedback({ sessionId }: Props) {
+export function FormFeedback({ sessionId, branch = 'primary' }: Props) {
   const router = useRouter()
   const [formData, setFormData] = useState({
     rating: 0,
@@ -29,7 +30,7 @@ export function FormFeedback({ sessionId }: Props) {
     gender: '',
     birthDate: '',
     phone: '',
-    visitedBranch: String(VISITED_BRANCHES[0]),
+    visitedBranch: branch === 'uc' ? 'UC' : String(VISITED_BRANCHES[0]),
     discoverySource: '',
     feedback: '',
   })
@@ -44,7 +45,7 @@ export function FormFeedback({ sessionId }: Props) {
   const [showIntro, setShowIntro] = useState(false)
 
   useEffect(() => {
-    checkFormStatus(sessionId)
+    checkFormStatus(sessionId, branch)
       .then((result) => {
         if (result.submitted) {
           setAlreadySubmitted(true)
@@ -115,7 +116,7 @@ export function FormFeedback({ sessionId }: Props) {
         birthDate: formatBirthDateForApi(formData.birthDate),
         socialMediaConsent,
       }
-      const result = await submitForm(sessionId, payload)
+      const result = await submitForm(sessionId, payload, branch)
       if (result.success && result.voucher) setVoucher(result.voucher)
       else setError(result.error || 'Terjadi kesalahan')
     } catch {
@@ -138,7 +139,7 @@ export function FormFeedback({ sessionId }: Props) {
   }
 
   if (alreadySubmitted) {
-    router.push(`/${sessionId}`)
+    router.push(branch === 'uc' ? `/uc/${sessionId}` : `/${sessionId}`)
     return null
   }
 
@@ -162,7 +163,7 @@ export function FormFeedback({ sessionId }: Props) {
             </p>
             <p style={voucherNoteStyle}>{voucher.message}</p>
           </div>
-          <button onClick={() => router.push(`/${sessionId}`)} style={buttonStyle}>
+          <button onClick={() => router.push(branch === 'uc' ? `/uc/${sessionId}` : `/${sessionId}`)} style={buttonStyle}>
             Lanjut Download
           </button>
         </section>
@@ -272,7 +273,7 @@ export function FormFeedback({ sessionId }: Props) {
             onChange={(event) => setFormData({ ...formData, visitedBranch: event.target.value })}
             style={inputStyle}
           >
-            {VISITED_BRANCHES.map((branch) => <option key={branch} value={branch}>{branch}</option>)}
+            {(branch === 'uc' ? [VISITED_BRANCHES[1]] : [VISITED_BRANCHES[0]]).map((branchName) => <option key={branchName} value={branchName}>{branchName}</option>)}
           </select>
         </div>
 
