@@ -66,7 +66,7 @@ function shotNumber(path: string): number {
 
 export function getPublicUrl(bucket: string, path: string, options?: { width?: number; quality?: number }, branch: Branch = 'primary'): string {
   const s3PublicUrl = branch === 'uc'
-    ? process.env.NEXT_PUBLIC_UC_S3_PUBLIC_URL
+    ? process.env.NEXT_PUBLIC_UC_S3_PUBLIC_URL || process.env.NEXT_PUBLIC_S3_PUBLIC_URL
     : process.env.NEXT_PUBLIC_S3_PUBLIC_URL
   if (bucket === 'photogenics-media-db' && s3PublicUrl) {
     const baseUrl = `${s3PublicUrl}/${bucket}/${path}`

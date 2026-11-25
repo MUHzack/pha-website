@@ -18,7 +18,7 @@ const DISCOVERY_SOURCES = [
   ['other', 'Lainnya'],
 ] as const
 
-const VISITED_BRANCHES = ['Kedai Asagi Sidoarjo', 'UC'] as const
+const VISITED_BRANCHES = ['Kedai Asagi Sidoarjo', 'Universitas Ciputra'] as const
 
 const introSeenKey = (sessionId: string) => `pha-form-intro-seen:${sessionId}`
 
@@ -30,7 +30,7 @@ export function FormFeedback({ sessionId, branch = 'primary' }: Props) {
     gender: '',
     birthDate: '',
     phone: '',
-    visitedBranch: branch === 'uc' ? 'UC' : String(VISITED_BRANCHES[0]),
+    visitedBranch: branch === 'uc' ? VISITED_BRANCHES[1] : String(VISITED_BRANCHES[0]),
     discoverySource: '',
     feedback: '',
   })
