@@ -24,7 +24,10 @@ function generateVoucherCode(): string {
 }
 
 function getBranch(request: Request): 'primary' | 'uc' {
-  return new URL(request.url).searchParams.get('branch') === 'uc' ? 'uc' : 'primary'
+  const url = new URL(request.url)
+  return url.pathname.startsWith('/api/uc/form/') || url.searchParams.get('branch') === 'uc'
+    ? 'uc'
+    : 'primary'
 }
 
 export async function GET(request: Request, { params }: RouteContext) {

@@ -21,7 +21,6 @@ URL primary tetap `/{sessionId}` dan memakai konfigurasi Supabase yang sudah ada
 ```env
 NEXT_PUBLIC_UC_SUPABASE_URL=https://project-uc.supabase.co
 NEXT_PUBLIC_UC_SUPABASE_ANON_KEY=...
-UC_SUPABASE_URL=https://project-uc.supabase.co
 UC_SUPABASE_SERVICE_ROLE_KEY=...
 ```
 

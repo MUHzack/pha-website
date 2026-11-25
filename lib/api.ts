@@ -30,8 +30,10 @@ export interface FormData {
 }
 
 export async function checkFormStatus(sessionId: string, branch: 'primary' | 'uc' = 'primary'): Promise<FormStatusResponse> {
-  const apiPath = `/api/form/${encodeURIComponent(sessionId)}`
-  const res = await fetch(branch === 'uc' ? `${apiPath}?branch=uc` : apiPath, {
+  const apiPath = branch === 'uc'
+    ? `/api/uc/form/${encodeURIComponent(sessionId)}`
+    : `/api/form/${encodeURIComponent(sessionId)}`
+  const res = await fetch(apiPath, {
     cache: 'no-store',
   })
   if (!res.ok) {
@@ -50,8 +52,10 @@ export async function submitForm(
   data: FormData,
   branch: 'primary' | 'uc' = 'primary'
 ): Promise<SubmitFormResponse> {
-  const apiPath = `/api/form/${encodeURIComponent(sessionId)}`
-  const res = await fetch(branch === 'uc' ? `${apiPath}?branch=uc` : apiPath, {
+  const apiPath = branch === 'uc'
+    ? `/api/uc/form/${encodeURIComponent(sessionId)}`
+    : `/api/form/${encodeURIComponent(sessionId)}`
+  const res = await fetch(apiPath, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
